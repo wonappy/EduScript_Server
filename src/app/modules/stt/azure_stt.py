@@ -126,7 +126,6 @@ class AzureSTT:
         self.setup_streaming_recognition(input_language)  # 음성 인식 언어 변경
         self.start_recognition()                                    # 다시 시작
 
-
     def is_active(self) -> bool:
         """현재 인식이 활성화되어 있는지 확인"""
         return self.is_listening
