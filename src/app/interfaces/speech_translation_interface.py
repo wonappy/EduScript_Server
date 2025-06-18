@@ -1,3 +1,5 @@
+# [interfaces/speech_translation_interface.py]
+# 실시간 번역 인터페이스 (AI 모듈 조합)
 import asyncio
 from modules.stt.azure_stt import AzureSTT
 from app.modules.translation.google_translator import GoogleTranslator

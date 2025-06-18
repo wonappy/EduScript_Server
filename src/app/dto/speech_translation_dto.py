@@ -9,13 +9,7 @@ class ConfigMessage(BaseModel):
     input_language: str                    # 음성 인식 언어
     target_languages: list[str]            # 번역 출력 언어
 
-# [2] 오디오 전송 메시지 (Request) - 음성 데이터는 binary 형식으로 전송
-class AudioMessage(BaseModel):
-    type: str = "audio"
-    target_languages: list[str]             # 번역 언어
-    # audio_data는 실제로는 bytes로 별도 전송
-
-# [3] 번역 결과 반환 (Response)
+# [2] 번역 결과 반환 (Response)
 class TranslationResult(BaseModel):
     target_lang: str
     result_text: str

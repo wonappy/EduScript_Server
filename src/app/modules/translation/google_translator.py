@@ -1,4 +1,5 @@
-# 테스트 3) Azure STT + Google Trnaslation
+# [modules/translation/google_translator.py]
+# google translator AI
 import os
 from google.cloud import translate_v2 as translate
 import asyncio
