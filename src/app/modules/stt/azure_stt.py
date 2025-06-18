@@ -1,4 +1,5 @@
-# 테스트 3) Azure STT + Google Trnaslation
+# [modules/stt/azure_stt.py]
+# Azure Speech to Text AI
 import os
 import azure.cognitiveservices.speech as speechsdk
 import asyncio  #async 선언이 안된 동기 함수에서 비동기 함수를 사용할 때 필요한 라이브러리
