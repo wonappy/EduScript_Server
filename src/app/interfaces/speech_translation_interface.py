@@ -6,7 +6,7 @@ class SpeechTranslationInterface:
     # [1] 초기화
     def __init__(self):
         """STT + Translation 인터페이스 초기화"""
-         # STT & 번역기 초기화
+         # STT &번역기 초기화
         self.stt = AzureSTT()
         self.translator = GoogleTranslator()
         self.translator.setup_translation() 
@@ -55,11 +55,6 @@ class SpeechTranslationInterface:
         """
         # 1. 오디오 추가
         self.stt.write_audio_chunk(audio_data)
-
-        # 타켓 언어 설정이 달라졌다면 -> self의 설정 언어도 변경
-        if self.current_target_languages != target_languages:
-            self.current_target_languages = target_languages
-            print(f"언어 설정 : {self.current_input_language} -> {self.current_target_languages}")
         
         # 2. 결과 체크 (timeout 동안만 결과값 대기 -> 블로킹 방지)
         try:
@@ -73,7 +68,7 @@ class SpeechTranslationInterface:
             return None  # 결과 없으면 즉시 None 반환
     
     # [3-1] 음성 인식 언어 변경
-    async def change_language_settings(self, input_language: str):
+    async def change_input_language_settings(self, input_language: str):
         """
         언어 설정 변경
         
@@ -95,6 +90,26 @@ class SpeechTranslationInterface:
             print(f"언어 변경 오류: {e}")
             raise
     
+    # [3-2] 번역 언어 변경
+    async def change_target_languages_settings(self, target_languages: list[str]):
+        """
+        언어 설정 변경
+        
+        Args:
+            targer_languages: 변경된 번역 언어
+        """
+        try:
+            print(f"번역 언어 설정 변경: {target_languages}")
+
+            # 새 설정 저장
+            self.current_target_languages= target_languages
+            
+            print(f"언어 설정 변경 완료: {self.current_input_language} -> {self.current_target_languages}")
+            
+        except Exception as e:
+            print(f"언어 변경 오류: {e}")
+            raise
+
     # [4] 세션 
     def stop_session(self):
         """번역 세션 종료"""
