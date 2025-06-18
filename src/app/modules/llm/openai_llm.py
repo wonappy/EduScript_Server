@@ -6,8 +6,7 @@ from src.app.core.config import api_settings
 
 class OpenAILLM:
     # [1] 초기화 - OpenAI API 키 호출 
-    def __init__(self):        
-        # print(f"API 키 확인: {api_settings.openai_llm_key[:10]}...") # 🔴 디버깅
+    def __init__(self):
         self.client = AsyncOpenAI(
             api_key=api_settings.openai_llm_key
         )
@@ -32,4 +31,4 @@ class OpenAILLM:
             raise Exception(f"[MODULE ERROR] 잘못된 요청 - {str(e)}") # 빈 메시지 or 잘못된 파라미터
         except Exception as e:
             raise Exception(f"[MODULE ERROR] OpenAI API 호출 실패 - {str(e)}")
-        openai_llm.py
+        
