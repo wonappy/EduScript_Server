@@ -12,6 +12,7 @@ router = APIRouter(prefix="/language")
     "/refinement",
     tags=["LLM"],
     status_code=status.HTTP_200_OK,
+    response_model = SpeechRefineResponse,
     summary="발화 정제",
     description="정제되지 않은 강연자의 발화 내용을 입력 받아 발화를 정제한다.",
 )
@@ -21,8 +22,12 @@ async def refine_text_route(request: SpeechRefineRequest) -> SpeechRefineRespons
         print(f"=== [ROUTER DEBUG] ===") 
         if not request.full_text or not request.full_text.strip():
             raise HTTPException(status_code=400, detail="[ROUTER ERROR] 발화 내용이 비어있습니다.")
+        
         # [1] 서비스 호출
-        return await refine_text_service(request)
+        service = refine_text_service()
+        response = await service.refine_text(request)
+    
+        return response
     except HTTPException as httpE:
         logging.error(f"[ROUTER ERROR] 발화 정제 HTTP 에러 발생 - [{httpE.status_code}: {httpE.detail}]")
         raise
