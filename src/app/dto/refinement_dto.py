@@ -1,7 +1,8 @@
 # [dto/refinement_dto.py] 
 # 발화 정제 요청 & 응답 클래스 
+from src.app.modules.file.file_data import FileData
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 # [1] 발화 정제
 # Request
@@ -13,9 +14,20 @@ class SpeechRefineRequest(BaseModel):
 
 # Response
 class SpeechRefineResponse(BaseModel):
-    refined_result: Optional[str] = None
-    summarized_result: Optional[str] = None
-    keypoints_result: Optional[str] = None
+    refined_result: Optional[FileData] = None
+    summarized_result: Optional[FileData] = None
+    keypoints_result: Optional[FileData] = None
+
+    def get_available_files(self) -> List[FileData]:
+        """실제로 생성된 파일들만 반환"""
+        files = []
+        if self.refined_result:
+            files.append(self.refined_result)
+        if self.summarized_result:
+            files.append(self.summarized_result)
+        if self.keypoints_result:
+            files.append(self.keypoints_result)
+        return files
 
 # 🔴 나중에 삭제
 # # [2] 발화 요약 
