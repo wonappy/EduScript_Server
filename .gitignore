@@ -1,3 +1,7 @@
+# Google Cloud 서비스 계정 키
+google-credentials.json
+*.json
+
 # Python 컴파일 파일 무시
 *.pyc
 __pycache__/

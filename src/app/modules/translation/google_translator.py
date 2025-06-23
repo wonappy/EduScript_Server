@@ -9,13 +9,17 @@ class GoogleTranslator:
     # [1] 초기화
     def __init__(self):
         # Google Translator 변수 초기화
-        self.google_api_key = os.environ['GOOGLE_CLOUD_KEY']
+        self.credentials_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+        if not self.credentials_path:
+            raise Exception("GOOGLE_APPLICATION_CREDENTIALS 환경변수가 설정되지 않았습니다")
+        self.translator = None
 
     # [2] 번역 설정    
     def setup_translation(self) :
         """ 번역기 초기화 """ 
         # Google Translator 설정
-        self.translator = translate.Client(api_key=self.google_api_key)
+        self.translator = translate.Client()
+        print("Google Translator 초기화 완료")
 
     # [3] 번역 
     # 3-1) 다중 번역 실행 -> 다중 번역 결과 반환
