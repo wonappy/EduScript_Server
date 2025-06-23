@@ -51,6 +51,7 @@ class GoogleTranslator:
                 result = await task 
                 if result:
                     results[lang] = result
+                    print(f"[TRANSLATOR] {lang} 결과 미리보기: {result['result_text'][:100]}...")
         
         #모든 번역 결과 반환
         return results

@@ -24,8 +24,7 @@ async def refine_text_route(request: SpeechRefineRequest) -> SpeechRefineRespons
             raise HTTPException(status_code=400, detail="[ROUTER ERROR] 발화 내용이 비어있습니다.")
         
         # [1] 서비스 호출
-        service = refine_text_service()
-        response = await service.refine_text(request)
+        response = await refine_text_service(request)
     
         return response
     except HTTPException as httpE:

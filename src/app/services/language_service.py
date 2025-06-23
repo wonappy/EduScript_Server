@@ -11,7 +11,7 @@ from src.app.prompts.keypoints_prompt import extract_keypoints_prompt
 llm_module = OpenAILLM() 
 
 # [1] 발화 정제
-async def refine_text_service(self, request: SpeechRefineRequest) -> SpeechRefineResponse:
+async def refine_text_service(request: SpeechRefineRequest) -> SpeechRefineResponse:
     try:        
         # [0] 디버깅 코드
         print("=== [SERVICE DEBUG] ===")
@@ -28,7 +28,7 @@ async def refine_text_service(self, request: SpeechRefineRequest) -> SpeechRefin
          ] 
         
         # 저장 변수 선언 
-        refined_text = None
+        refined_result = None
         summarized_text = None
         keypoints_text = None  
 
@@ -44,7 +44,7 @@ async def refine_text_service(self, request: SpeechRefineRequest) -> SpeechRefin
                 print(f"[SERVICE] 정제 파일 생성 완료 - 크기: {refined_result.file_size} bytes")
         # 3) 요약 처리    
         if request.enable_summarize == True:
-                summarized_text = await self.summarize_text(temp_refined_text)
+                summarized_text = await summarize_text(temp_refined_text)
                 summarized_result = FileData.from_text(
                     text=summarized_text,
                     filename="speech_summary.txt"
@@ -52,7 +52,7 @@ async def refine_text_service(self, request: SpeechRefineRequest) -> SpeechRefin
                 print(f"[SERVICE] 요약 파일 생성 완료 - 크기: {summarized_result.file_size} bytes")
         # 4) 중요 내용 추출 처리
         if request.enable_keypoints == True:
-                keypoints_text = await self.extract_keypoints(temp_refined_text)
+                keypoints_text = await extract_keypoints(temp_refined_text)
                 keypoints_result = FileData.from_text(
                     text=keypoints_text,
                     filename="key_points.txt"
