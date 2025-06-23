@@ -34,6 +34,11 @@ class AzureSTT:
         #인식 언어 설정
         speech_config.speech_recognition_language = input_language
 
+        speech_config.set_property(speechsdk.PropertyId.Speech_SegmentationSilenceTimeoutMs, "300")               # 더 빠른 구간 인식
+        speech_config.set_property(speechsdk.PropertyId.SpeechServiceConnection_InitialSilenceTimeoutMs, "1000")  # 초기 침묵 시간 단축
+        speech_config.set_property_by_name("SpeechServiceConnection_RecoMode", "CONVERSATION")
+        speech_config.enable_dictation() 
+
         #오디오 설정
         audio_format = speechsdk.audio.AudioStreamFormat(
             samples_per_second=16000, 
@@ -50,12 +55,21 @@ class AzureSTT:
         )
 
         # 이벤트 핸들러 설정 
-        def recognized_handler(evt):
+        def recognized_handler(evt):            
             if evt.result.reason == speechsdk.ResultReason.RecognizedSpeech:    #stt 결과 받아오기 -> 처리 자체를 동기 방식으로 진행 (비동기 함수 사용x)
                 text = evt.result.text.strip()
                 if text:
                     print(f"🗣️ 원본: {text}\n")
-                    asyncio.create_task(self.result_queue.put(text))    #동기 방식으로 반환된 stt 결과를 queue에 순서대로 저장
+                    try:
+                        self.result_queue.put_nowait(text)                      #동기 방식으로 반환된 stt 결과를 queue에 순서대로 저장
+                    except Exception as e:
+                        print(f"큐 추가 오류: {e}")
+                else:
+                    print("🔇 빈 텍스트 결과")
+            elif evt.result.reason == speechsdk.ResultReason.NoMatch:
+                print("🔇 음성 인식 결과 없음")
+            else:
+                print(f"🔍 기타 STT 결과: {evt.result.reason}")
 
         def session_started_handler(evt):
             print("🎯 음성 인식 세션이 시작되었습니다.")
@@ -89,7 +103,7 @@ class AzureSTT:
         self.speech_recognizer.start_continuous_recognition()   ## Azure STT audio_stream 모니터링 시작 -> audio_data 추가되는 것 인식
         self.is_listening = True
 
-    #[3-1] 실시간 음성 받아오기 : audio_stream에 데이터 추가 → Azure가 자동 감지 → STT 처리 → 콜백 호출
+    # [3-1] 실시간 음성 받아오기 : audio_stream에 데이터 추가 → Azure가 자동 감지 → STT 처리 → 콜백 호출
     def write_audio_chunk(self, audio_data: bytes):
         """
         오디오 청크를 스트림에 추가
@@ -99,18 +113,24 @@ class AzureSTT:
         """
         if self.audio_stream and self.is_listening:
             self.audio_stream.write(audio_data)
+            print(f"Azure STT에 오디오 전송: {len(audio_data)} bytes")
+        else:
+            print(f"Azure STT 비활성 상태: stream={self.audio_stream is not None}, listening={self.is_listening}")
     
     # [3-2] 음성 처리 결과 queue 비동기로 반환
     async def get_recognition_result(self):
         """STT 결과를 비동기로 반환"""
-        return await self.result_queue.get()
+        try:
+            return await self.result_queue.get()
+        except:
+            return None
 
     # [4] 실행 중지
     def stop_recognition(self):
         """연속 음성 인식 중지"""
         if self.speech_recognizer and self.is_listening:
             print("\n🛑 음성 인식을 중지합니다...")
-            self.speech_recognizer.stop_recognition()
+            self.speech_recognizer.stop_continuous_recognition()
             self.is_listening = False
         else:
             print("⚠️ 진행 중인 음성 인식이 없습니다.")
