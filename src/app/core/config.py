@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 
 # .env 파일 로드
 load_dotenv()
+print(f"[DEBUG] API Key 로드됨: {os.getenv('OPENAI_API_KEY')[:10] if os.getenv('OPENAI_API_KEY') else 'None'}")
 
 class APISettings:
     def __init__(self):
