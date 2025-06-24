@@ -54,9 +54,26 @@ class AzureSTT:
             audio_config=audio_config
         )
 
-        # 이벤트 핸들러 설정 
+        # 이벤트 핸들러 설정 - recognized
         def recognized_handler(evt):            
             if evt.result.reason == speechsdk.ResultReason.RecognizedSpeech:    #stt 결과 받아오기 -> 처리 자체를 동기 방식으로 진행 (비동기 함수 사용x)
+                text = evt.result.text.strip()
+                if text:
+                    print(f"🗣️ 원본: {text}\n")
+                    try:
+                        self.result_queue.put_nowait(text)                      #동기 방식으로 반환된 stt 결과를 queue에 순서대로 저장
+                    except Exception as e:
+                        print(f"큐 추가 오류: {e}")
+                else:
+                    print("🔇 빈 텍스트 결과")
+            elif evt.result.reason == speechsdk.ResultReason.NoMatch:
+                print("🔇 음성 인식 결과 없음")
+            else:
+                print(f"🔍 기타 STT 결과: {evt.result.reason}")
+
+        # 이벤트 핸들러 설정 - recognizing
+        def recognizing_handler(evt):            
+            if evt.result.reason == speechsdk.ResultReason.RecognizingSpeech:    #stt 결과 받아오기 -> 처리 자체를 동기 방식으로 진행 (비동기 함수 사용x)
                 text = evt.result.text.strip()
                 if text:
                     print(f"🗣️ 원본: {text}\n")
@@ -86,6 +103,7 @@ class AzureSTT:
         
         # 이벤트 연결
         self.speech_recognizer.recognized.connect(recognized_handler)                   # stt 결과가 나왔을 때,
+        #self.speech_recognizer.recognizing.connect(recognizing_handler)
         self.speech_recognizer.session_started.connect(session_started_handler)         # 세션이 시작되었을 때, 
         self.speech_recognizer.session_stopped.connect(session_stopped_handler)         # 세션이 종료되었을 때,
         self.speech_recognizer.canceled.connect(canceled_handler)                       # 인식이 취소되었을 떄,
