@@ -10,9 +10,9 @@ async def websocket_translation_service(websocket : WebSocket):
     interface = None
     try:
         # 인터페이스 호출 (init)
-        print("SpeechTranslationInterface 생성 시도...")
+        #print("SpeechTranslationInterface 생성 시도...")
         interface = SpeechTranslationInterface()
-        print("SpeechTranslationInterface 생성 성공")
+        #print("SpeechTranslationInterface 생성 성공")
 
         # 1. WebSocket 연결
         await websocket.accept()
