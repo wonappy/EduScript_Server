@@ -72,6 +72,7 @@ class AzureSTT:
             else:
                 print(f"🔍 기타 STT 결과: {evt.result.reason}")
 
+        # 이벤트 핸들러 설정 - recognizing
         # mode - recognizing : stt가 인식한 단위의 연속해서 반환. 실시성이 우수하나 빠른 업데이트로 보기 어지러울 수 있음.
         def recognizing_handler(evt):            
             if evt.result.reason == speechsdk.ResultReason.RecognizingSpeech:    #stt 결과 받아오기 -> 처리 자체를 동기 방식으로 진행 (비동기 함수 사용x)
@@ -88,6 +89,7 @@ class AzureSTT:
                 print("🔇 음성 인식 결과 없음")
             else:
                 print(f"🔍 기타 STT 결과: {evt.result.reason}")
+
 
         # mode - hybrid_recognition_handler : recognizing과 recognized의 장점 결합. 일정 시간동안 인식한 단위 결과값을 반환.
         def hybrid_recognition_handler(evt):      
