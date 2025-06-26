@@ -2,7 +2,7 @@
 # speech_translation 작업 로직 처리 
 from src.app.interfaces.single_speech_translation_interface import SingleSpeechTranslationInterface
 from src.app.interfaces.multiple_speech_translation_interface import MultipleSpeechTranslationInterface
-from src.app.dto.speech_translation_dto import ConfigMessage, MultipleConfigMessage, SpeechTranslationResponse, StatusMessage
+from src.app.dto.speech_translation_dto import ConfigMessage, MultipleConfigMessage, SpeechTranslationResponse, SeparatedSpeechTranslationResponse, StatusMessage
 from fastapi import WebSocket, WebSocketDisconnect
 import json, traceback, asyncio
 
@@ -56,7 +56,7 @@ async def websocket_speech_service(websocket : WebSocket, mode : str):
 
          # 3. 개선된 실시간 처리 - 백그라운드에서 번역 결과 전송
         result_sender_task = asyncio.create_task(
-            send_translation_results(websocket, interface)
+            send_translation_results(websocket, interface, mode)
         )
 
         # 4. 오디오 스트림 수신 - 논블로킹
@@ -145,7 +145,7 @@ async def process_audio_stream(websocket: WebSocket, interface, mode):
             break
 
 # [3] 번역 결과 전송 - 백그라운드 태스크
-async def send_translation_results(websocket: WebSocket, interface):
+async def send_translation_results(websocket: WebSocket, interface, mode):
     """백그라운드에서 번역 결과를 지속적으로 전송"""
     print("번역 결과 전송 태스크 시작")
     
@@ -156,8 +156,17 @@ async def send_translation_results(websocket: WebSocket, interface):
             
             if result:
                 print(f"번역 결과 받음: {list(result.keys())}")
-                response = SpeechTranslationResponse(translations=result)
+                if mode == "single" :
+                    response = SpeechTranslationResponse(translations=result)
+                elif mode == "multiple" :
+                   # 첫 번째 요소를 원문으로 처리
+                    first_key = next(iter(result))
+                    original = {first_key: result[first_key]}
+                    # 나머지를 번역으로 처리
+                    translations = {k: v for k, v in result.items() if k != first_key}
+                    response = SeparatedSpeechTranslationResponse(original= original, translations=translations)
                 await websocket.send_json(response.model_dump())
+                print(f"websocket 전송 : {response.model_dump()}")
                 print("클라이언트에 번역 결과 전송 완료")
             else:
                 # 결과가 없으면 잠깐 대기
