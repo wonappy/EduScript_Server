@@ -1,7 +1,7 @@
 # [interfaces/multiple_speech_translation_interface.py]
 # 실시간 번역 인터페이스 (AI 모듈 조합)
 import asyncio
-from app.modules.stt.azure_stt_multiple import AzureSTTMultiple
+from src.app.modules.stt.azure_stt_multiple import AzureSTTMultiple
 from src.app.modules.translation.google_translator import GoogleTranslator
 
 class MultipleSpeechTranslationInterface:
