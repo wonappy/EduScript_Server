@@ -1,15 +1,15 @@
-# [interfaces/speech_translation_interface.py]
+# [interfaces/single_speech_translation_interface.py]
 # 실시간 번역 인터페이스 (AI 모듈 조합)
 import asyncio
-from src.app.modules.stt.azure_stt import AzureSTT
+from app.modules.stt.azure_stt_single import AzureSTTSingle
 from src.app.modules.translation.google_translator import GoogleTranslator
 
-class SpeechTranslationInterface:
+class SingleSpeechTranslationInterface:
     # [1] 초기화
     def __init__(self):
         """STT + Translation 인터페이스 초기화"""
          # STT &번역기 초기화
-        self.stt = AzureSTT()
+        self.stt = AzureSTTSingle()
         self.translator = GoogleTranslator()
         self.translator.setup_translation() 
                         
