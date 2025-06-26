@@ -1,10 +1,10 @@
-# [modules/stt/azure_stt.py]
+# [modules/stt/azure_stt_single.py]
 # Azure Speech to Text AI
 import os
 import azure.cognitiveservices.speech as speechsdk
 import asyncio  #async 선언이 안된 동기 함수에서 비동기 함수를 사용할 때 필요한 라이브러리
 
-class AzureSTT:
+class AzureSTTSingle:
     # [1] 초기화
     def __init__(self):
         # stt 변수 초기화
