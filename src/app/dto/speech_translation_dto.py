@@ -23,6 +23,12 @@ class SpeechTranslationResponse(BaseModel):
     type: str = "result"
     translations: Dict[str, TranslationResult]
 
+# [2]-2 원문 지정 번역 결과 반환 (Response) 
+class SeparatedSpeechTranslationResponse(BaseModel):
+    type: str = "result"
+    original: Dict[str, TranslationResult]
+    translations: Dict[str, TranslationResult]
+
 # 상태 반환 (Response)
 class StatusMessage(BaseModel):
     type: str = "status"
