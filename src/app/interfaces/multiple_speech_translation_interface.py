@@ -1,20 +1,20 @@
-# [interfaces/speech_translation_interface.py]
+# [interfaces/multiple_speech_translation_interface.py]
 # 실시간 번역 인터페이스 (AI 모듈 조합)
 import asyncio
-from src.app.modules.stt.azure_stt import AzureSTT
+from src.app.modules.stt.azure_stt_multiple import AzureSTTMultiple
 from src.app.modules.translation.google_translator import GoogleTranslator
 
-class SpeechTranslationInterface:
+class MultipleSpeechTranslationInterface:
     # [1] 초기화
     def __init__(self):
         """STT + Translation 인터페이스 초기화"""
          # STT &번역기 초기화
-        self.stt = AzureSTT()
+        self.stt = AzureSTTMultiple()
         self.translator = GoogleTranslator()
         self.translator.setup_translation() 
                         
-        # stt_translation 설정 변수
-        self.current_input_language = None
+        # stt 설정 변수
+        self.current_input_languages = None
         self.current_target_languages = None
 
         # 실행 상태 변수
@@ -27,7 +27,7 @@ class SpeechTranslationInterface:
         self.background_tasks = []
         
     # [2] 실시간 번역 세션 시작
-    async def start_session(self, input_language: str, target_languages: list[str]):
+    async def start_session(self, input_languages: list[str], target_languages: list[str]):
         """
         실시간 번역 세션 시작
         
@@ -37,11 +37,11 @@ class SpeechTranslationInterface:
         """
         try:
             # STT 설정 및 시작
-            self.stt.setup_streaming_recognition(input_language)
+            self.stt.setup_streaming_recognition(input_languages)
             self.stt.start_recognition()
             
             # 현재 설정 저장
-            self.current_input_language = input_language
+            self.current_input_languages = input_languages
             self.current_target_languages = target_languages
             self.is_active = True
 
@@ -49,7 +49,7 @@ class SpeechTranslationInterface:
             task = asyncio.create_task(self._process_stt_results())
             self.background_tasks.append(task)
             
-            print(f"번역 세션 시작: {self.current_input_language} → {self.current_target_languages}")
+            print(f"번역 세션 시작: {self.current_input_languages} → {self.current_target_languages}")
             
         except Exception as e:
             print(f"!!!!!세션 시작 오류!!!!!: {e}")
@@ -63,13 +63,13 @@ class SpeechTranslationInterface:
         while self.is_active:
             try:
                 # STT에서 결과 가져오기 (논블로킹)
-                text = await self.stt.get_recognition_result()
+                stt_result = await self.stt.get_recognition_result()
                 
-                if text and text.strip():
-                    print(f"📝 STT 결과 받음: {text}")
+                if stt_result and isinstance(stt_result, dict) and stt_result.get('text', '').strip():
+                    print(f"📝 STT 결과 받음: {stt_result['language']} - \"{stt_result['text']}\"")
                     
                     # 번역 태스크 시작 (백그라운드에서 처리)
-                    asyncio.create_task(self._translate_and_queue(text))
+                    asyncio.create_task(self._translate_and_queue(stt_result))
                 
                 # 짧은 대기 후 다시 확인
                 await asyncio.sleep(0.1)
@@ -96,15 +96,17 @@ class SpeechTranslationInterface:
         self.stt.write_audio_chunk(audio_data)
 
     # [] 번역 후 결과 큐에 저장
-    async def _translate_and_queue(self, text):
+    async def _translate_and_queue(self, stt_result):
         """텍스트를 번역하고 결과 큐에 저장"""
         try:
-            print(f"🔄 번역 시작: {text}")
+            print(f"🔄 번역 시작: {stt_result['language']} - \"{stt_result['text']}")
+
+            input_language = stt_result['language']
             
             # 번역 실행
             translation_result = await self.translator.translate_multiple_languages(
-                text, 
-                self.current_input_language, 
+                stt_result['text'], 
+                input_language, 
                 self.current_target_languages
             )
             
@@ -151,23 +153,23 @@ class SpeechTranslationInterface:
     #         return None  # 결과 없으면 즉시 None 반환
     
     # [3-1] 음성 인식 언어 변경
-    async def change_input_language_settings(self, input_language: str):
+    async def change_input_language_settings(self, input_languages: list[str]):
         """
         언어 설정 변경
         
         Args:
-            input_language: 새로운 입력 언어
+            input_languages: 새로운 입력 언어들
         """
         try:
-            print(f"입력 언어 설정 변경: {input_language}")
+            print(f"입력 언어 설정 변경: {input_languages}")
 
             # 새 설정 저장
-            self.current_input_language = input_language
+            self.current_input_languages = input_languages
             
             # STT 언어 변경 (기존 세션 종료 -> 재시작)
-            self.stt.change_setup_recognition(self.current_input_language)
+            self.stt.change_setup_recognition(self.current_input_languages)
             
-            print(f"언어 설정 변경 완료: {self.current_input_language} -> {self.current_target_languages}")
+            print(f"언어 설정 변경 완료: {self.current_input_languages} -> {self.current_target_languages}")
             
         except Exception as e:
             print(f"언어 변경 오류: {e}")
@@ -187,7 +189,7 @@ class SpeechTranslationInterface:
             # 새 설정 저장
             self.current_target_languages= target_languages
             
-            print(f"언어 설정 변경 완료: {self.current_input_language} -> {self.current_target_languages}")
+            print(f"언어 설정 변경 완료: {self.current_input_languages} -> {self.current_target_languages}")
             
         except Exception as e:
             print(f"언어 변경 오류: {e}")
@@ -217,6 +219,6 @@ class SpeechTranslationInterface:
         """현재 상태 반환"""
         return {
             'is_active': self.is_active,
-            'input_language': self.current_input_language,
+            'input_languages': self.current_input_languages,
             'stt_active': self.stt.is_active() if self.stt else False
         }

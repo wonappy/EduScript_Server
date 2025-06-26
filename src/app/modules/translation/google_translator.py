@@ -41,7 +41,20 @@ class GoogleTranslator:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             # 언어 별 번역 처리 -> 별도 스레드 병렬 구조로 시간 단축!
             tasks = []
-            for lang in target_languages:
+
+            # target_languages에서 원문과 동일한 language 제거
+            # target_languages : google 언어 -> '-' 있는 것, 없는 것이 있음 -> 조건문으로 비교
+            # input_languages : azure 언어 -> 모두 '-'가 있음 -> 항상 파싱해서 비교
+            translate_target_languages = []
+            for language in target_languages :
+                if '-' in language:
+                    if input_language.split('-')[0] != language.split('-')[0]:
+                        translate_target_languages.append(language)
+                else :
+                    if input_language.split('-')[0] != language:
+                        translate_target_languages.append(language)
+
+            for lang in translate_target_languages:
                 # Google Translation API는 동기 -> 각 스레드에서 동기 작업을 병렬로 처리
                 task = loop.run_in_executor(executor, self.translate_text, text, lang)
                 tasks.append((lang, task))      # task 추가
@@ -51,6 +64,7 @@ class GoogleTranslator:
                 result = await task 
                 if result:
                     results[lang] = result
+                    #이거 로그 안찍혔던거 같은디 왜지
                     print(f"[TRANSLATOR] {lang} 결과 미리보기: {result['result_text'][:100]}...")
         
         #모든 번역 결과 반환
@@ -64,6 +78,8 @@ class GoogleTranslator:
         try:
             result = self.translator.translate(text, target_language=target_language)       # 번역 요청
             translated_text = result['translatedText']                                      # 번역 결과
+            # 로그 출력
+            print(f"[TRANSLATOR] {target_language} 번역 결과: {translated_text}")
             
             return {
                 'target_lang': target_language,

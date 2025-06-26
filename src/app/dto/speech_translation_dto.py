@@ -3,10 +3,16 @@
 from pydantic import BaseModel
 from typing import Dict, Optional
 
-# [1] 언어 설정 메시지 (Request)
+# [1]-1 단일 인식 언어 설정 메시지 (Request)
 class ConfigMessage(BaseModel):
     type: str = "setting" 
     input_language: str                    # 음성 인식 언어
+    target_languages: list[str]            # 번역 출력 언어
+
+# [1]-2 다중 인식 언어 설정 메시지 (Request)
+class MultipleConfigMessage(BaseModel):
+    type: str = "setting" 
+    input_languages: list[str]                    # 음성 인식 언어
     target_languages: list[str]            # 번역 출력 언어
 
 # [2] 번역 결과 반환 (Response)
