@@ -1,7 +1,7 @@
 # [routes/speech_route.py]
 # speech 작업 엔드포인트
 from fastapi import APIRouter, WebSocket
-from app.services.speech_service import websocket_speech_service
+from src.app.services.speech_service import websocket_speech_service
 
 router = APIRouter(prefix="/speech-translation")
 

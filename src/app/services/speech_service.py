@@ -1,7 +1,7 @@
 # [serivces/speech_service.py]
 # speech_translation 작업 로직 처리 
-from app.interfaces.single_speech_translation_interface import SingleSpeechTranslationInterface
-from app.interfaces.multiple_speech_translation_interface import MultipleSpeechTranslationInterface
+from src.app.interfaces.single_speech_translation_interface import SingleSpeechTranslationInterface
+from src.app.interfaces.multiple_speech_translation_interface import MultipleSpeechTranslationInterface
 from src.app.dto.speech_translation_dto import ConfigMessage, MultipleConfigMessage, SpeechTranslationResponse, StatusMessage
 from fastapi import WebSocket, WebSocketDisconnect
 import json, traceback, asyncio
