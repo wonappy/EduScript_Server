@@ -4,6 +4,7 @@ from fastapi import APIRouter, status, HTTPException
 import logging
 from src.app.dto.refinement_dto import SpeechRefineRequest, SpeechRefineResponse
 from src.app.services.language_service import refine_text_service
+from src.app.services.pdf_service import refine_text_to_pdf_service
 
 router = APIRouter(prefix="/language")
 
@@ -24,9 +25,12 @@ async def refine_text_route(request: SpeechRefineRequest) -> SpeechRefineRespons
             raise HTTPException(status_code=400, detail="[ROUTER ERROR] 발화 내용이 비어있습니다.")
         
         # [1] 서비스 호출
-        response = await refine_text_service(request)
-    
-        return response
+
+        if request.fileFormat.lower() == "pdf":
+            return await refine_text_to_pdf_service(request)
+        else:
+            response = await refine_text_service(request)
+            return response
     except HTTPException as httpE:
         logging.error(f"[ROUTER ERROR] 발화 정제 HTTP 에러 발생 - [{httpE.status_code}: {httpE.detail}]")
         raise

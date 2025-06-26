@@ -7,7 +7,8 @@ from typing import Optional, List
 # [1] 발화 정제
 # Request
 class SpeechRefineRequest(BaseModel):
-    full_text: str    
+    full_text: str
+    fileFormat: str = "txt"  # 기본 파일 형식은 txt
     enable_refine: bool = True
     enable_summarize: bool = False
     enable_keypoints: bool = False 
