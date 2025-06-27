@@ -8,6 +8,7 @@ from typing import Optional, List
 # Request
 class SpeechRefineRequest(BaseModel):
     full_text: str
+    fileName : str = "speech"  # 기본 파일 이름
     fileFormat: str = "txt"  # 기본 파일 형식은 txt
     enable_refine: bool = True
     enable_summarize: bool = False
