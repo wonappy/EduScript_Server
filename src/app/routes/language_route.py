@@ -5,6 +5,7 @@ import logging
 from src.app.dto.refinement_dto import SpeechRefineRequest, SpeechRefineResponse
 from src.app.services.language_service import refine_text_service
 from src.app.services.pdf_service import refine_text_to_pdf_service
+from src.app.services.docx_service import refine_text_to_docx_service
 
 router = APIRouter(prefix="/language")
 
@@ -28,6 +29,8 @@ async def refine_text_route(request: SpeechRefineRequest) -> SpeechRefineRespons
 
         if request.fileFormat.lower() == "pdf":
             return await refine_text_to_pdf_service(request)
+        elif request.fileFormat.lower() == "docx":
+            return await refine_text_to_docx_service(request)
         else:
             response = await refine_text_service(request)
             return response
