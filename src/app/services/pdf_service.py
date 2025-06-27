@@ -40,8 +40,10 @@ async def refine_text_to_pdf_service(request: SpeechRefineRequest) -> SpeechRefi
         if request.enable_refine:
             refined_result = create_pdf_from_text(
                 text=temp_refined_text,
-                filename="refined_speech.pdf"
+                filename=f"{request.fileName}_refined_speech.pdf",
+                user_filename=request.fileName
             )
+            print(f"[PDF SERVICE] 정제 PDF 파일 제목:{refined_result.filename}")
             print(f"[PDF SERVICE] 정제 PDF 파일 생성 완료 - 크기: {refined_result.file_size} bytes")
         
         # 4) 요약 처리
@@ -51,7 +53,8 @@ async def refine_text_to_pdf_service(request: SpeechRefineRequest) -> SpeechRefi
             print(f"[PDF SERVICE] 요약 완료")
             summarized_result = create_pdf_from_text(
                 text=summarized_text,
-                filename="speech_summary.pdf"
+                filename=f"{request.fileName}_speech_summary.pdf",
+                user_filename=request.fileName
             )
             print(f"[PDF SERVICE] 요약 PDF 파일 생성 완료 - 크기: {summarized_result.file_size} bytes")
         
@@ -61,7 +64,8 @@ async def refine_text_to_pdf_service(request: SpeechRefineRequest) -> SpeechRefi
             print(f"[PDF SERVICE] 중요 내용 추출 완료")
             keypoints_result = create_pdf_from_text(
                 text=keypoints_text,
-                filename="key_points.pdf"
+                filename=f"{request.fileName}_key_points.pdf",
+                user_filename=request.fileName
             )
             print(f"[PDF SERVICE] 핵심포인트 PDF 파일 생성 완료 - 크기: {keypoints_result.file_size} bytes")
         
