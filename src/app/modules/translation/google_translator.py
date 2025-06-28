@@ -30,7 +30,7 @@ class GoogleTranslator:
 
         # 원문 내용 저장 (가장 첫번째로 저장)
         results[input_language] = {
-                'target_lang': input_language,
+                'target_lang': input_language.split('-')[0],
                 'result_text': text,
             }
         
