@@ -10,6 +10,7 @@ import json, traceback, asyncio
 async def websocket_speech_service(websocket : WebSocket, mode : str):
     interface = None
     try:
+        print(f"모드 설정 : {mode}")
         # 인터페이스 호출 (init)
         #print("SpeechTranslationInterface 생성 시도...")
         if mode == "single" :
@@ -26,12 +27,14 @@ async def websocket_speech_service(websocket : WebSocket, mode : str):
         # 2-1. 초기 설정 request 받아오기
         print("설정 메시지 수신 대기")
         config_msg = await websocket.receive_json()
+        print(f"수신 설정 메시지 : {config_msg}")
         print("설정 메시지 수신 완료")
         config = None
         if mode == "single" : 
             config = ConfigMessage(**config_msg) 
         elif mode == "multiple" :
             config = MultipleConfigMessage(**config_msg) 
+            print(f"수신 설정 메시지 : {config}")
         else :
             raise Exception('confg 형식이 알맞지 않습니다.')
             
@@ -163,8 +166,7 @@ async def send_translation_results(websocket: WebSocket, interface, mode):
                     first_key = next(iter(result))
                     original = {first_key: result[first_key]}
                     # 나머지를 번역으로 처리
-                    translations = {k: v for k, v in result.items() if k != first_key}
-                    response = SeparatedSpeechTranslationResponse(original= original, translations=translations)
+                    response = SeparatedSpeechTranslationResponse(original= original, translations=result)
                 await websocket.send_json(response.model_dump())
                 print(f"websocket 전송 : {response.model_dump()}")
                 print("클라이언트에 번역 결과 전송 완료")
