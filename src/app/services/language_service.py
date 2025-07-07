@@ -7,163 +7,215 @@ from src.app.dto.refinement_dto import SpeechRefineRequest, SpeechRefineResponse
 from src.app.prompts.refining_prompt import refine_speech_prompt
 from src.app.prompts.summarizing_prompt import summarize_speech_prompt
 from src.app.prompts.keypoints_prompt import extract_keypoints_prompt
+from src.app.prompts.meeting_refining_prompt import meeting_refinement_prompt, meeting_structure_prompt
+from src.app.utils.file_generator_factory import create_file_by_format, create_document_by_mode_and_format
 
 api_call_count = 0  # API 호출 횟수 카운트
 
-# [0] LLM 모듈 
+# LLM 모듈 
 llm_module = OpenAILLM() 
 
-# [1] 발화 정제
+# =============================================================================
+# 메인 서비스 함수
+# =============================================================================
+
 async def refine_text_service(request: SpeechRefineRequest) -> SpeechRefineResponse:
-    global api_call_count  # 전역 변수로 API 호출 횟수 사용
-    api_call_count =0  # API 호출 횟수 증가
-
+    """발화 정제 통합 서비스 - 모드별/파일형식별 처리"""
     try:        
-        # [0] 디버깅 코드
-        print("=== [SERVICE DEBUG] ===")
-        print(">> Refine")
-        print(f"[SERVICE] full_text: {request.full_text}")
-        print(f"[SERIVCE] enable_refine: {request.enable_refine}")
-        print(f"[SERIVCE] enable_summarize: {request.enable_summarize}")
-        print(f"[SERIVCE] enable_keypoints: {request.enable_keypoints}")
-                
-        # 1) 정제 프롬프트 설계
-        messages = [
-            { "role": "system", "content": refine_speech_prompt() },
-            { "role": "user", "content": f"{request.full_text}" } 
-         ] 
-        
-        # 저장 변수 선언 
-        refined_result = None
-        summarized_result = None
-        keypoints_result = None  
+        print("=== [SERVICE] 발화 정제 시작 ===")
+        print(f"모드: {request.processing_mode}")
+        print(f"파일형식: {request.fileFormat}")
+        print(f"파일명: {request.fileName}")
+        print(f"정제: {request.enable_refine}, 요약: {request.enable_summarize}, 핵심: {request.enable_keypoints}")
 
-        # # 2) LLM 모듈 호출 (API) -> 정제 처리     
-        print(f"[DEBUG] API 호출 1 - 정제 시작")
-        temp_refined_text = await llm_module.select_gpt_model(messages=messages)
-        print(f"[DEBUG] API 호출 1 완료")
-        api_call_count += 1  # API 호출 횟수 증가  
+        # 1단계: 모드별 기본 정제
+        refined_text = await _refine_by_mode(request.full_text, request.processing_mode)
+        print(f"✅ 기본 정제 완료")
 
-        # # 임시 Mock 응답 (실제 API 대신) test
-        # print(f"[DEBUG] Mock API 호출 - 정제 시작")
-        # temp_refined_text = request.full_text.replace("음...", "").replace("그...", "").replace("어...", "").strip()
-        # if not temp_refined_text:
-        #     temp_refined_text = "오늘은 파이썬에 대해서 설명을 드리려고 합니다."
-        # print(f"[DEBUG] Mock API 호출 완료")
-        
-        # 정제 파일 생성 여부
-        if request.enable_refine == True:
-                refined_result = FileData.from_text(
-                    text=temp_refined_text,
-                    filename="refined_speech.txt"
-                )
-                print(f"[SERVICE] 정제 파일 생성 완료 - 크기: {refined_result.file_size} bytes")
-
-        # # 정제 파일 생성 test
-        # if request.enable_refine:
-        #     refined_result = FileData.from_text(
-        #         text=temp_refined_text,
-        #         filename="refined_speech.txt"
-        #     )
-        #     print(f"[SERVICE] 정제 파일 생성 완료 - 크기: {refined_result.file_size} bytes")
-
-        # 3) 요약 처리    
-        if request.enable_summarize == True:
-                print(f"[DEBUG] API 호출 2 - 요약 시작")
-                #await asyncio.sleep(60)  # 1분 대기
-                summarized_text = await summarize_text(temp_refined_text)
-                print(f"[SERVICE] 요약 완료 내용 : {summarized_text}")
-                print(f"[DEBUG] API 호출 2 완료")
-                summarized_result = FileData.from_text(
-                    text=summarized_text,
-                    filename="speech_summary.txt"
-                )               
-                print(f"[SERVICE] 요약 파일 생성 완료 - 크기: {summarized_result.file_size} bytes")
-
-        # # 요약 처리 (Mock) test
-        # if request.enable_summarize:
-        #     print(f"[DEBUG] Mock 요약 시작")
-        #     summarized_text = f"요약: {temp_refined_text[:100]}..."
-        #     summarized_result = FileData.from_text(
-        #         text=summarized_text,
-        #         filename="speech_summary.txt"
-        #     )
-        #     print(f"[SERVICE] 요약 파일 생성 완료 - 크기: {summarized_result.file_size} bytes")
-
-        # 4) 중요 내용 추출 처리
-        if request.enable_keypoints == True:
-                #await asyncio.sleep(60)  # 1분 대기
-                keypoints_text = await extract_keypoints(temp_refined_text)
-                print(f"[SERVICE] 중요 내용 추출 완료 내용 : {keypoints_text}")
-                keypoints_result = FileData.from_text(
-                    text=keypoints_text,
-                    filename="key_points.txt"
-                )               
-                print(f"[SERVICE] 핵심포인트 파일 생성 완료 - 크기: {keypoints_result.file_size} bytes")
-
-        # # 키포인트 처리 (Mock) test
-        # if request.enable_keypoints:
-        #     print(f"[DEBUG] Mock 키포인트 시작")
-        #     keypoints_text = f"핵심포인트:\n1. 파이썬 소개\n2. 설명 내용\n3. 주요 특징"
-        #     keypoints_result = FileData.from_text(
-        #         text=keypoints_text,
-        #         filename="key_points.txt"
-        #     )
-        #     print(f"[SERVICE] 핵심포인트 파일 생성 완료 - 크기: {keypoints_result.file_size} bytes")
-
-        # 5) 응답 결과 DTO (정제, 요약, 추출)
-        total_files = sum(1 for result in [refined_result, summarized_result, keypoints_result] if result is not None)
-        
-        response = SpeechRefineResponse(
-            refined_result=refined_result,
-            summarized_result=summarized_result,
-            keypoints_result=keypoints_result,
-            total_files=total_files,
-            message=f"총 {total_files}개 파일이 생성되었습니다." if total_files > 0 else "파일 생성에 실패했습니다."
-        )
-
-        print(f"[SERVICE] 처리 완료 - 생성된 파일: {total_files}개")
-        return response
+        # 2단계: 파일 생성
+        if request.processing_mode == "lecture":
+            return await _process_lecture_mode(request, refined_text)
+        elif request.processing_mode == "conference":
+            return await _process_conference_mode(request, refined_text)
+        else:
+            raise Exception(f"지원하지 않는 모드: {request.processing_mode}")
     
     except Exception as e:
+        print(f"❌ 서비스 오류: {str(e)}")
         raise Exception(f"[SERVICE ERROR] 발화 정제 실패 - {str(e)}")
 
-# [2] 발화 요약
-async def summarize_text(temp_refined_text: str) -> str:
-    try:        
-        # [0] 디버깅 코드
-        print(">> Summarize")
-        print(f"[SERVICE] refined_text: {temp_refined_text}")
-        
-        # 1) 내용 요약 프롬프트 설계
-        messages = [
-            { "role": "system", "content": summarize_speech_prompt() },
-            { "role": "user", "content": f"{temp_refined_text}" }
-        ]
-        # 2) LLM API 호출 (MODULE) -> 내용 요약 처리
-        summarized_text = await llm_module.select_gpt_model(messages=messages)
-        # 3) 요약 결과 문자열 
-        return summarized_text
-    except Exception as e:
-        raise Exception(f"[SERIVCE ERROR] 발화 요약 처리 실패 - {str(e)}")
+# =============================================================================
+# 모드별 처리 함수
+# =============================================================================
 
-# [3] 중요 내용 추출
-async def extract_keypoints(temp_refined_text: str) -> str:
-    try:        
-        # [0] 디버깅 코드
-        print(">> Extract Keypoints") 
-        print(f"[SERVICE] refined_text: {temp_refined_text}")
+async def _process_lecture_mode(request: SpeechRefineRequest, refined_text: str) -> SpeechRefineResponse:
+    """강의 모드 처리: 정제 + 요약 + 핵심포인트"""
+    print("📚 강의 모드 처리 시작")
+    
+    refined_result = None
+    summarized_result = None
+    keypoints_result = None
 
-        # 1) 중요 내용 추출 프롬프트 설계
-        messages = [
-            { "role": "system", "content": extract_keypoints_prompt() },
-            { "role": "user", "content": f"{temp_refined_text}" }
-        ]
+    # 정제된 파일
+    if request.enable_refine:
+        refined_result = _create_file_by_type(
+            content=refined_text,
+            filename=f"{request.fileName}_정제된내용",
+            file_format=request.fileFormat,
+            mode="lecture"
+        )
+        print("✅ 정제 파일 생성 완료")
 
-        # 2) LLM API 호출 (MODULE) -> 중요 내용 추출 처리
-        keypoints_text = await llm_module.select_gpt_model(messages=messages)
+    # 요약 파일
+    if request.enable_summarize:
+        summarized_text = await _summarize_text(refined_text)
+        summarized_result = _create_file_by_type(
+            content=summarized_text,
+            filename=f"{request.fileName}_요약",
+            file_format=request.fileFormat,
+            mode="lecture"
+        )
+        print("✅ 요약 파일 생성 완료")
 
-        # 3) 추출 결과 반환 
-        return keypoints_text
-    except Exception as e:
-        raise Exception(f"[SERIVCE ERROR] 중요 내용 추출 실패 - {str(e)}")
+    # 핵심포인트 파일
+    if request.enable_keypoints:
+        keypoints_text = await _extract_keypoints(refined_text)
+        keypoints_result = _create_file_by_type(
+            content=keypoints_text,
+            filename=f"{request.fileName}_핵심포인트",
+            file_format=request.fileFormat,
+            mode="lecture"
+        )
+        print("✅ 핵심포인트 파일 생성 완료")
+
+    return _create_response(refined_result, summarized_result, keypoints_result)
+
+async def _process_conference_mode(request: SpeechRefineRequest, refined_text: str) -> SpeechRefineResponse:
+    """회의 모드 처리: 회의록 구조화"""
+    print("🤝 회의 모드 처리 시작")
+    
+    refined_result = None
+
+    if request.enable_refine:
+        if request.fileFormat.lower() in ['docx', 'pdf']:
+            # 구조화된 회의록 생성
+            structured_json = await _structure_meeting_content(refined_text)
+            refined_result = _create_meeting_document(
+                json_content=structured_json,
+                filename=f"{request.fileName}_회의록",
+                file_format=request.fileFormat
+            )
+            print("✅ 구조화된 회의록 생성 완료")
+        else:
+            # TXT 등 기본 파일
+            refined_result = _create_file_by_type(
+                content=refined_text,
+                filename=f"{request.fileName}_회의록",
+                file_format=request.fileFormat,
+                mode="conference"
+            )
+            print("✅ 기본 회의록 파일 생성 완료")
+
+    return _create_response(refined_result, None, None)
+
+# =============================================================================
+# 파일 생성 함수들
+# =============================================================================
+
+def _create_file_by_type(content: str, filename: str, file_format: str, mode: str) -> FileData:
+    """파일 형식별 생성 (일반 텍스트)"""
+    if file_format.lower() == "txt":
+        return FileData.from_text(content, f"{filename}.txt")
+    
+    elif file_format.lower() == "docx":
+        return create_docx_from_text(content, f"{filename}.docx", filename)
+    
+    elif file_format.lower() == "pdf":
+        return create_pdf_from_text(content, f"{filename}.pdf", filename)
+    
+    else:
+        # 기타 형식은 기존 팩토리 사용
+        return create_file_by_format(content, filename, file_format)
+
+def _create_meeting_document(json_content: str, filename: str, file_format: str) -> FileData:
+    """회의록 전용 문서 생성"""
+    if file_format.lower() == "docx":
+        return create_meeting_minutes_docx(json_content, f"{filename}.docx", filename)
+    
+    elif file_format.lower() == "pdf":
+        return create_meeting_minutes_pdf(json_content, f"{filename}.pdf", filename)
+    
+    else:
+        # TXT나 기타 형식은 JSON 그대로 저장
+        return FileData.from_text(json_content, f"{filename}.{file_format}")
+
+# =============================================================================
+# LLM 처리 함수들
+# =============================================================================
+
+async def _refine_by_mode(text: str, mode: str) -> str:
+    """모드별 기본 정제"""
+    if mode == "conference":
+        prompt = meeting_refinement_prompt()
+        print("🤝 회의용 정제 프롬프트 사용")
+    else:  # lecture
+        prompt = refine_speech_prompt()
+        print("📚 강의용 정제 프롬프트 사용")
+    
+    messages = [
+        {"role": "system", "content": prompt},
+        {"role": "user", "content": text}
+    ]
+    
+    return await llm_module.select_gpt_model(messages=messages)
+
+async def _structure_meeting_content(text: str) -> str:
+    """회의 내용 JSON 구조화"""
+    print("🔄 회의 내용 구조화 중...")
+    
+    messages = [
+        {"role": "system", "content": meeting_structure_prompt()},
+        {"role": "user", "content": text}
+    ]
+    
+    structured_response = await llm_module.select_gpt_model(messages=messages)
+    print(f"📋 구조화 결과 미리보기: {structured_response[:100]}...")
+    return structured_response
+
+async def _summarize_text(text: str) -> str:
+    """텍스트 요약"""
+    print("📝 텍스트 요약 중...")
+    
+    messages = [
+        {"role": "system", "content": summarize_speech_prompt()},
+        {"role": "user", "content": text}
+    ]
+    
+    return await llm_module.select_gpt_model(messages=messages)
+
+async def _extract_keypoints(text: str) -> str:
+    """핵심 포인트 추출"""
+    print("🎯 핵심 포인트 추출 중...")
+    
+    messages = [
+        {"role": "system", "content": extract_keypoints_prompt()},
+        {"role": "user", "content": text}
+    ]
+    
+    return await llm_module.select_gpt_model(messages=messages)
+
+def _create_response(refined_result: FileData = None, 
+                    summarized_result: FileData = None, 
+                    keypoints_result: FileData = None) -> SpeechRefineResponse:
+    """응답 객체 생성"""
+    total_files = sum(1 for result in [refined_result, summarized_result, keypoints_result] if result is not None)
+    
+    response = SpeechRefineResponse(
+        refined_result=refined_result,
+        summarized_result=summarized_result,
+        keypoints_result=keypoints_result,
+        total_files=total_files,
+        message=f"✅ 총 {total_files}개 파일이 생성되었습니다." if total_files > 0 else "❌ 파일 생성에 실패했습니다."
+    )
+    print(f"처리 완료 - 생성된 파일: {total_files}개")
+    return response

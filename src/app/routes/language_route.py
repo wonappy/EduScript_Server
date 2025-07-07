@@ -27,13 +27,13 @@ async def refine_text_route(request: SpeechRefineRequest) -> SpeechRefineRespons
         
         # [1] 서비스 호출
 
-        if request.fileFormat.lower() == "pdf":
-            return await refine_text_to_pdf_service(request)
-        elif request.fileFormat.lower() == "docx":
-            return await refine_text_to_docx_service(request)
-        else:
-            response = await refine_text_service(request)
-            return response
+        # if request.fileFormat.lower() == "pdf":
+        #     return await refine_text_to_pdf_service(request)
+        # elif request.fileFormat.lower() == "docx":
+        #     return await refine_text_to_docx_service(request, mode = request.processing_mode)
+        # else:
+        response = await refine_text_service(request)
+        return response
     except HTTPException as httpE:
         logging.error(f"[ROUTER ERROR] 발화 정제 HTTP 에러 발생 - [{httpE.status_code}: {httpE.detail}]")
         raise
