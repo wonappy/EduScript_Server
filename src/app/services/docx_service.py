@@ -6,6 +6,7 @@ from src.app.prompts.refining_prompt import refine_speech_prompt
 from src.app.prompts.summarizing_prompt import summarize_speech_prompt
 from src.app.prompts.keypoints_prompt import extract_keypoints_prompt
 from src.app.utils.docx_generator import create_docx_from_text
+from src.app.utils.docx_generator import create_meeting_minutes_docx #test
 
 # LLM 모듈
 llm_module = OpenAILLM()
