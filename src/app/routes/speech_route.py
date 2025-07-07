@@ -6,7 +6,7 @@ from src.app.services.speech_service import websocket_speech_service
 router = APIRouter(prefix="/speech-translation")
 
 # [1] Single WebSocket 연결
-@router.websocket("/connect")
+@router.websocket("/connect/single-mode")
 async def websocket_endpoint(websocket: WebSocket):
     """
         강의 모드 :
