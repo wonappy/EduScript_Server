@@ -3,9 +3,7 @@
 from fastapi import APIRouter, status, HTTPException
 import logging
 from src.app.dto.refinement_dto import SpeechRefineRequest, SpeechRefineResponse
-from src.app.services.language_service import refine_text_service
-from src.app.services.pdf_service import refine_text_to_pdf_service
-from src.app.services.docx_service import refine_text_to_docx_service
+from src.app.services.language_service import build_text_service
 
 router = APIRouter(prefix="/language")
 
@@ -32,7 +30,7 @@ async def refine_text_route(request: SpeechRefineRequest) -> SpeechRefineRespons
         # elif request.fileFormat.lower() == "docx":
         #     return await refine_text_to_docx_service(request, mode = request.processing_mode)
         # else:
-        response = await refine_text_service(request)
+        response = await build_text_service(request)
         return response
     except HTTPException as httpE:
         logging.error(f"[ROUTER ERROR] 발화 정제 HTTP 에러 발생 - [{httpE.status_code}: {httpE.detail}]")

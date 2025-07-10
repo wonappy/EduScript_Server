@@ -70,7 +70,7 @@ def safe_wrap_text(text, max_chars=60):
     
     return lines if lines else ['']
 
-def create_pdf_from_text(text: str, filename: str, user_filename: str) -> FileData:
+def util_pdf_from_text(text: str, filename: str, user_filename: str) -> FileData:
     """안전한 PDF 생성 함수"""
     try:   
         buffer = BytesIO()
@@ -213,19 +213,3 @@ def create_pdf_from_text(text: str, filename: str, user_filename: str) -> FileDa
         traceback.print_exc()
         raise Exception(f"PDF 생성 실패: {str(e)}")
 
-# 디버깅용 테스트 함수
-def test_pdf_creation():
-    """PDF 생성 테스트"""
-    try:
-        test_text = "안녕하세요. 이것은 테스트입니다.\n\n두 번째 문단입니다."
-        result = create_pdf_from_text(test_text, "test.pdf", "테스트")
-        
-        # 로컬에 저장해서 확인
-        with open("debug_test.pdf", "wb") as f:
-            f.write(result.to_bytes())
-        
-        print("테스트 PDF 생성 완료: debug_test.pdf")
-        return True
-    except Exception as e:
-        print(f"테스트 실패: {e}")
-        return False
