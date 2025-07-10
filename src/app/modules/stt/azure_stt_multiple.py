@@ -44,7 +44,6 @@ class AzureSTTMultiple:
         #동일한 언어에 대해 여러 로캘을 포함하지 마세요(예: en-US및 en-GB)
         auto_detect_source_language_config = speechsdk.languageconfig.AutoDetectSourceLanguageConfig(languages=input_languages)
 
-
         #오디오 설정
         audio_format = speechsdk.audio.AudioStreamFormat(
             samples_per_second=16000, 
@@ -61,32 +60,32 @@ class AzureSTTMultiple:
             audio_config=audio_config
         )
 
-        # 이벤트 핸들러 설정
-        # mode - recognized : stt가 한 문장 인식을 완료했을 때의 결과값을 반환. 실시간성은 떨어지지만 품질이 우수.
-        def recognized_handler(evt):            
-            if evt.result.reason == speechsdk.ResultReason.RecognizedSpeech:    #stt 결과 받아오기 -> 처리 자체를 동기 방식으로 진행 (비동기 함수 사용x)
-                text = evt.result.text.strip()
+        # # 이벤트 핸들러 설정
+        # # mode - recognized : stt가 한 문장 인식을 완료했을 때의 결과값을 반환. 실시간성은 떨어지지만 품질이 우수.
+        # def recognized_handler(evt):            
+        #     if evt.result.reason == speechsdk.ResultReason.RecognizedSpeech:    #stt 결과 받아오기 -> 처리 자체를 동기 방식으로 진행 (비동기 함수 사용x)
+        #         text = evt.result.text.strip()
 
-                #인식 음성 분석
-                auto_detect_result = speechsdk.AutoDetectSourceLanguageResult(evt.result)
-                detected_language = auto_detect_result.language
+        #         #인식 음성 분석
+        #         auto_detect_result = speechsdk.AutoDetectSourceLanguageResult(evt.result)
+        #         detected_language = auto_detect_result.language
 
-                if text:
-                    print(f"🗣️ 원본: {text}\n")
-                    try:
-                        result_data = {
-                            'language': detected_language,
-                            'text': text
-                        }
-                        self.result_queue.put_nowait(result_data)                      #동기 방식으로 반환된 stt 결과를 queue에 순서대로 저장
-                    except Exception as e:
-                        print(f"큐 추가 오류: {e}")
-                else:
-                    print("🔇 빈 텍스트 결과")
-            elif evt.result.reason == speechsdk.ResultReason.NoMatch:
-                print("🔇 음성 인식 결과 없음")
-            else:
-                print(f"🔍 기타 STT 결과: {evt.result.reason}")
+        #         if text:
+        #             print(f"🗣️ 원본: {text}\n")
+        #             try:
+        #                 result_data = {
+        #                     'language': detected_language,
+        #                     'text': text
+        #                 }
+        #                 self.result_queue.put_nowait(result_data)                      #동기 방식으로 반환된 stt 결과를 queue에 순서대로 저장
+        #             except Exception as e:
+        #                 print(f"큐 추가 오류: {e}")
+        #         else:
+        #             print("🔇 빈 텍스트 결과")
+        #     elif evt.result.reason == speechsdk.ResultReason.NoMatch:
+        #         print("🔇 음성 인식 결과 없음")
+        #     else:
+        #         print(f"🔍 기타 STT 결과: {evt.result.reason}")
 
         # 이벤트 핸들러 설정 - recognizing
         # mode - recognizing : stt가 인식한 단위의 연속해서 반환. 실시성이 우수하나 빠른 업데이트로 보기 어지러울 수 있음.
@@ -116,25 +115,31 @@ class AzureSTTMultiple:
                 print(f"🔍 기타 STT 결과: {evt.result.reason}")
 
 
-        # mode - hybrid_recognition_handler : recognizing과 recognized의 장점 결합. 일정 시간동안 인식한 단위 결과값을 반환.
-        def hybrid_recognition_handler(evt):      
-            # 1) recognizing 모드로 결과값을 반환받아옴.      
-            if evt.result.reason == speechsdk.ResultReason.RecognizingSpeech:  
+        # 공통 핸들러 함수 정의 - reconizing + recognized
+        def hybrid_result_handler(evt, is_final: bool):
+            reason = evt.result.reason
+            
+            if reason == speechsdk.ResultReason.RecognizingSpeech or reason == speechsdk.ResultReason.RecognizedSpeech:
                 text = evt.result.text.strip()
+
+                #음성 인식 분석
+                auto_detect_result = speechsdk.AutoDetectSourceLanguageResult(evt.result)
+                detected_language = auto_detect_result.language
+
                 if text:
-                    print(f"🗣️ 원본: {text}\n")
+                    result_data = {
+                        'language': detected_language,
+                        'text': text,
+                        'is_final': is_final
+                    }
+                    print(f"🗣️  {'[최종]' if is_final else '[중간]'} {text} (언어 : {detected_language})")
                     try:
-                        self.result_queue.put_nowait(text)                      #동기 방식으로 반환된 stt 결과를 queue에 순서대로 저장
+                        self.result_queue.put_nowait(result_data)   #동기 방식으로 반환된 stt 결과를 queue에 순서대로 저장
                     except Exception as e:
                         print(f"큐 추가 오류: {e}")
-                else:
-                    print("🔇 빈 텍스트 결과")
-
-            # 인식 결과가 없을 경우
-            elif evt.result.reason == speechsdk.ResultReason.NoMatch:
-                print("🔇 음성 인식 결과 없음")
-            else:
-                print(f"🔍 기타 STT 결과: {evt.result.reason}")
+            
+            elif reason == speechsdk.ResultReason.NoMatch:
+                print("🔇 음성 인식 결과 없음 (NoMatch)")
 
         def session_started_handler(evt):
             print("🎯 음성 인식 세션이 시작되었습니다.")
@@ -150,8 +155,10 @@ class AzureSTTMultiple:
             self.is_listening = False
         
         # 이벤트 연결
-        #self.speech_recognizer.recognized.connect(recognized_handler)                   # stt 결과가 나왔을 때,
-        self.speech_recognizer.recognizing.connect(recognizing_handler)
+        # stt 결과가 나왔을 때,
+        self.speech_recognizer.recognized.connect(lambda evt: hybrid_result_handler(evt, is_final=True))                   
+        self.speech_recognizer.recognizing.connect(lambda evt: hybrid_result_handler(evt, is_final=False))
+
         self.speech_recognizer.session_started.connect(session_started_handler)         # 세션이 시작되었을 때, 
         self.speech_recognizer.session_stopped.connect(session_stopped_handler)         # 세션이 종료되었을 때,
         self.speech_recognizer.canceled.connect(canceled_handler)                       # 인식이 취소되었을 떄,

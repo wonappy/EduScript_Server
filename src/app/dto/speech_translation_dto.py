@@ -21,11 +21,13 @@ class TranslationResult(BaseModel):
     result_text: str
 class SpeechTranslationResponse(BaseModel):
     type: str = "result"
+    is_final: bool
     translations: Dict[str, TranslationResult]
 
 # [2]-2 원문 지정 번역 결과 반환 (Response) 
 class SeparatedSpeechTranslationResponse(BaseModel):
     type: str = "result"
+    is_final: bool
     original: Dict[str, TranslationResult]
     translations: Dict[str, TranslationResult]
 
