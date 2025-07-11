@@ -34,10 +34,13 @@ class AzureSTTSingle:
         #인식 언어 설정
         speech_config.speech_recognition_language = input_language
 
-        speech_config.set_property(speechsdk.PropertyId.Speech_SegmentationSilenceTimeoutMs, "300")               # 더 빠른 구간 인식
-        speech_config.set_property(speechsdk.PropertyId.SpeechServiceConnection_InitialSilenceTimeoutMs, "1000")  # 초기 침묵 시간 단축
-        speech_config.set_property_by_name("SpeechServiceConnection_RecoMode", "CONVERSATION")
-        speech_config.enable_dictation() 
+        speech_config.set_property(speechsdk.PropertyId.SpeechServiceConnection_InitialSilenceTimeoutMs, "1000")  # 녹음 시작 후 첫 음성을 기다리는 시간
+        speech_config.set_property(speechsdk.PropertyId.Speech_SegmentationSilenceTimeoutMs, "200")               # (세그먼트)문장 구분을 위한 침묵 감지 시간
+        speech_config.set_property(speechsdk.PropertyId.SpeechServiceConnection_EndSilenceTimeoutMs, "300")       # (문장)문장 구분을 위한 침묵 감지 시간
+        
+        speech_config.set_property_by_name("SpeechServiceConnection_RecoMode", "INTERACTIVE")  # 실시간용 모드
+        #speech_config.set_property_by_name("SpeechServiceConnection_RecoMode", "CONVERSATION")  # 대화용
+        speech_config.output_format = speechsdk.OutputFormat.Simple  # 간단한 출력 형식
 
         #오디오 설정
         audio_format = speechsdk.audio.AudioStreamFormat(
