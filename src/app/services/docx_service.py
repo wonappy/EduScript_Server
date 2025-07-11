@@ -4,7 +4,6 @@ from src.app.modules.file.file_data import FileData
 from src.app.dto.refinement_dto import SpeechRefineRequest, SpeechRefineResponse
 from src.app.prompts.keypoints_prompt import extract_keypoints_prompt
 from src.app.utils.docx_generator import create_docx_from_text
-from src.app.utils.docx_generator import create_meeting_minutes_docx #test
 
 # LLM 모듈
 llm_module = OpenAILLM()
