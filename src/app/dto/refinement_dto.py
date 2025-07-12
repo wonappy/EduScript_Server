@@ -1,5 +1,6 @@
 # [dto/refinement_dto.py] 
 # 발화 정제 요청 & 응답 클래스 
+import json
 from src.app.modules.file.file_data import FileData
 from pydantic import BaseModel
 from typing import Optional, List
@@ -12,7 +13,8 @@ class SpeechRefineRequest(BaseModel):
     fileFormat: str = "txt"  # 기본 파일 형식은 txt
     enable_refine: bool = True
     enable_summarize: bool = False
-    enable_keypoints: bool = False 
+    enable_keypoints: bool = False
+    processing_mode: str = "lecture"
 
 # Response
 class SpeechRefineResponse(BaseModel):

@@ -158,15 +158,25 @@ async def send_translation_results(websocket: WebSocket, interface, mode):
             result = await interface.get_latest_translation_result()
             
             if result:
-                print(f"번역 결과 받음: {list(result.keys())}")
+                # dict에서 is_final 값 먼저 추출
+                is_final = result.pop('is_final', False)
+
+                print(f"번역 결과 받음: (최종: {is_final}) {list(result.keys())}")
                 if mode == "single" :
-                    response = SpeechTranslationResponse(translations=result)
+                    response = SpeechTranslationResponse(
+                        is_final = is_final, 
+                        translations=result
+                    )
                 elif mode == "multiple" :
                    # 첫 번째 요소를 원문으로 처리
                     first_key = next(iter(result))
                     original = {first_key: result[first_key]}
                     # 나머지를 번역으로 처리
-                    response = SeparatedSpeechTranslationResponse(original= original, translations=result)
+                    response = SeparatedSpeechTranslationResponse(
+                        is_final=is_final, 
+                        original= original, 
+                        translations=result
+                    )
                 await websocket.send_json(response.model_dump())
                 print(f"websocket 전송 : {response.model_dump()}")
                 print("클라이언트에 번역 결과 전송 완료")

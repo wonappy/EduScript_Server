@@ -63,13 +63,17 @@ class SingleSpeechTranslationInterface:
         while self.is_active:
             try:
                 # STT에서 결과 가져오기 (논블로킹)
-                text = await self.stt.get_recognition_result()
+                stt_result = await self.stt.get_recognition_result()
                 
-                if text and text.strip():
-                    print(f"📝 STT 결과 받음: {text}")
+                if stt_result and isinstance(stt_result, dict) and stt_result.get('text', '').strip():
+                     # is_final 값 추출
+                    text = stt_result.get('text')
+                    is_final = stt_result.get('is_final', False)
+
+                    print(f"📝 STT 결과 받음: {text} (최종: {is_final})")
                     
                     # 번역 태스크 시작 (백그라운드에서 처리)
-                    asyncio.create_task(self._translate_and_queue(text))
+                    asyncio.create_task(self._translate_and_queue(text, is_final))
                 
                 # 짧은 대기 후 다시 확인
                 await asyncio.sleep(0.1)
@@ -96,7 +100,7 @@ class SingleSpeechTranslationInterface:
         self.stt.write_audio_chunk(audio_data)
 
     # [] 번역 후 결과 큐에 저장
-    async def _translate_and_queue(self, text):
+    async def _translate_and_queue(self, text, is_final):
         """텍스트를 번역하고 결과 큐에 저장"""
         try:
             print(f"🔄 번역 시작: {text}")
@@ -109,7 +113,10 @@ class SingleSpeechTranslationInterface:
             )
             
             if translation_result:
-                print(f"✅ 번역 완료: {list(translation_result.keys())}")
+                # 번역 결과에 stt 모드 값 추가
+                translation_result['is_final'] = is_final
+
+                print(f"✅ 번역 완료: (최종: {is_final}): {list(translation_result.keys())}")
                 # 번역 결과를 큐에 저장
                 await self.translation_result_queue.put(translation_result)
             
