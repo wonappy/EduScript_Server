@@ -66,10 +66,15 @@ class MultipleSpeechTranslationInterface:
                 stt_result = await self.stt.get_recognition_result()
                 
                 if stt_result and isinstance(stt_result, dict) and stt_result.get('text', '').strip():
-                    print(f"📝 STT 결과 받음: {stt_result['language']} - \"{stt_result['text']}\"")
+                    print(f"📝 STT 결과 받음: {stt_result['language']} - \"{stt_result['text']}\" (최종: {stt_result.get('is_final')})")
                     
+                    # 값 추출
+                    is_final = stt_result.get('is_final', False)
+                    text = stt_result.get('text')
+                    language = stt_result.get('language')
+
                     # 번역 태스크 시작 (백그라운드에서 처리)
-                    asyncio.create_task(self._translate_and_queue(stt_result))
+                    asyncio.create_task(self._translate_and_queue(text, language, is_final))
                 
                 # 짧은 대기 후 다시 확인
                 await asyncio.sleep(0.1)
@@ -96,22 +101,25 @@ class MultipleSpeechTranslationInterface:
         self.stt.write_audio_chunk(audio_data)
 
     # [] 번역 후 결과 큐에 저장
-    async def _translate_and_queue(self, stt_result):
+    async def _translate_and_queue(self, text, language, is_final):
         """텍스트를 번역하고 결과 큐에 저장"""
         try:
-            print(f"🔄 번역 시작: {stt_result['language']} - \"{stt_result['text']}")
+            print(f"🔄 번역 시작: {language} - \"{text}")
 
-            input_language = stt_result['language']
+            input_language = language
             
             # 번역 실행
             translation_result = await self.translator.translate_multiple_languages(
-                stt_result['text'], 
+                text, 
                 input_language, 
                 self.current_target_languages
             )
             
             if translation_result:
-                print(f"✅ 번역 완료: {list(translation_result.keys())}")
+                # 번역 결과에 stt 모드 값 추가
+                translation_result['is_final'] = is_final
+
+                print(f"✅ 번역 완료: (최종: {is_final}): {list(translation_result.keys())}")
                 # 번역 결과를 큐에 저장
                 await self.translation_result_queue.put(translation_result)
             
