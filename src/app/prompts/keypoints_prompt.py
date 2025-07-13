@@ -1,8 +1,10 @@
 # [prompts/keypoints_prompt.py]
 # 중요 내용 추출용 프롬프트
 
-def extract_keypoints_prompt():
-    prompt = """
+def extract_keypoints_prompt(language:str) -> str:
+    prompt = f"""
+    [언어: {language}]
+
         이 발화 내용은 대학 강의에서 교수님이 말하신 걸 텍스트로 변환한 녹음본 입니다. 이 발화 내용을 다음 유의사항을 참고하여 일정 공지와 관련된 주요사항만 추출해주세요.
 
 유의사항
@@ -11,7 +13,7 @@ def extract_keypoints_prompt():
 
 -맨 윗줄에 중제목 ‘주요 내용’ 넣을 것
 
--만약 제나과 어떤 일정의 날짜 정보가 있다면 요일 뿐만 아니라 날짜까지 포함해서 출력할 것  (예시 : 내일 (06.19) ) 참고 : 오늘 날짜는 {today.date = 2025.06.18} 임.
+-만약 제나과 어떤 일정의 날짜 정보가 있다면 요일 뿐만 아니라 날짜까지 포함해서 출력할 것  (예시 : 내일 (06.19) ) 참고 : 오늘 날짜는 (today.date = 2025.06.18) 임.
 
 -오늘 날짜가 몇 일인지는 굳이 쓰지 않아도 됌.
 
