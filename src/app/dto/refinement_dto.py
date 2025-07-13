@@ -11,27 +11,40 @@ class SpeechRefineRequest(BaseModel):
     full_text: str
     fileName : str = "speech"  # 기본 파일 이름
     fileFormat: str = "txt"  # 기본 파일 형식은 txt
+
+    # 언어 설정
+    language_list: List[str] = ["ko"]
+
+    # 문서 타입 설정
     enable_refine: bool = True
     enable_summarize: bool = False
     enable_keypoints: bool = False
+    
     processing_mode: str = "lecture"
 
 # Response
 class SpeechRefineResponse(BaseModel):
+    # 단일 파일 (기존 구조 호환)
     refined_result: Optional[FileData] = None
     summarized_result: Optional[FileData] = None
     keypoints_result: Optional[FileData] = None
 
+    # 다국어 지원용 멀티 파일 리스트
+    refined_results: List[FileData] = []
+    summarized_results: List[FileData] = []
+    keypoints_results: List[FileData] = []
+
+    total_files: int = 0
+    message: str = ""
+
     def get_available_files(self) -> List[FileData]:
-        """실제로 생성된 파일들만 반환"""
-        files = []
-        if self.refined_result:
-            files.append(self.refined_result)
-        if self.summarized_result:
-            files.append(self.summarized_result)
-        if self.keypoints_result:
-            files.append(self.keypoints_result)
-        return files
+        """실제로 생성된 모든 파일 반환 (단일 + 다국어 파일 포함)"""
+        return (
+            [f for f in [self.refined_result, self.summarized_result, self.keypoints_result] if f]
+            + self.refined_results
+            + self.summarized_results
+            + self.keypoints_results
+        )
 
 # 🔴 나중에 삭제
 # # [2] 발화 요약 
