@@ -72,7 +72,7 @@ async def _process_lecture_mode(request: SpeechRefineRequest, refined_texts: dic
             ))
 
         if request.enable_summarize:
-            summarized = await _summarize_lecture_text(text)
+            summarized = await _summarize_lecture_text(text, lang)
             summarized_results.append(create_file_by_format(
                 content=summarized,
                 filename=f"{request.fileName}_{lang}_요약",
@@ -80,7 +80,7 @@ async def _process_lecture_mode(request: SpeechRefineRequest, refined_texts: dic
             ))
 
         if request.enable_keypoints:
-            keypoints = await _extract_lecture_keypoints(text)
+            keypoints = await _extract_lecture_keypoints(text, lang)
             keypoints_results.append(create_file_by_format(
                 content=keypoints,
                 filename=f"{request.fileName}_{lang}_핵심포인트",
