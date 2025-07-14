@@ -17,6 +17,8 @@ async def websocket_speech_service(websocket : WebSocket, mode : str):
             interface = SingleSpeechTranslationInterface()
         elif mode == "multiple" :
             interface = MultipleSpeechTranslationInterface()
+        else:
+            raise ValueError(f"지원되지 않는 모드입니다: {mode}")
         #print("SpeechTranslationInterface 생성 성공")
 
         # 1. WebSocket 연결
@@ -28,6 +30,7 @@ async def websocket_speech_service(websocket : WebSocket, mode : str):
         print("설정 메시지 수신 대기")
         config_msg = await websocket.receive_json()
         print(f"수신 설정 메시지 : {config_msg}")
+        
         print("설정 메시지 수신 완료")
         config = None
         if mode == "single" : 
