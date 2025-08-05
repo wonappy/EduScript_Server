@@ -35,26 +35,50 @@ def get_korean_font():
     return None
 
 def wrap_text_by_width(c, text, font_name, font_size, max_width):
-    """폰트 기준으로 실제 그려지는 너비에 따라 줄바꿈"""
-    words = text.split(' ')
+    """
+    문자열을 폰트 기준 너비에 맞게 줄바꿈
+    - 한글, 영어: 띄어쓰기 기준
+    - 일본어 등 CJK: 글자 단위 줄바꿈
+    """
+    import re
+
+    def is_cjk(text):
+        # 일본어/한자/한글/중국어 판별
+        return any('\u3040' <= ch <= '\u30ff' or '\u4e00' <= ch <= '\u9fff' or '\uac00' <= ch <= '\ud7a3' for ch in text)
+
     lines = []
     current_line = ''
-
-    for word in words:
-        test_line = current_line + (' ' if current_line else '') + word
-        text_width = c.stringWidth(test_line, font_name, font_size)
-
-        if text_width <= max_width:
-            current_line = test_line
-        else:
-            if current_line:
-                lines.append(current_line)
-            current_line = word
-
-    if current_line:
-        lines.append(current_line)
+    
+    # CJK 처리 (띄어쓰기 없는 언어)
+    if is_cjk(text):
+        for char in text:
+            test_line = current_line + char
+            text_width = c.stringWidth(test_line, font_name, font_size)
+            if text_width <= max_width:
+                current_line = test_line
+            else:
+                if current_line:
+                    lines.append(current_line)
+                current_line = char
+        if current_line:
+            lines.append(current_line)
+    else:
+        # 기존 방식 (띄어쓰기 있는 언어)
+        words = text.split(' ')
+        for word in words:
+            test_line = current_line + (' ' if current_line else '') + word
+            text_width = c.stringWidth(test_line, font_name, font_size)
+            if text_width <= max_width:
+                current_line = test_line
+            else:
+                if current_line:
+                    lines.append(current_line)
+                current_line = word
+        if current_line:
+            lines.append(current_line)
 
     return lines
+
 
 def util_pdf_from_text(text: str, filename: str, user_filename: str) -> FileData:
     """안전한 PDF 생성 함수"""
