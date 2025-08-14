@@ -34,41 +34,51 @@ def get_korean_font():
             return font_path
     return None
 
-def safe_wrap_text(text, max_chars=60):
-    """안전한 문자 수 기반 줄바꿈"""
-    if not text.strip():
-        return ['']
-    
-    # 긴 줄을 적절히 분할
+def wrap_text_by_width(c, text, font_name, font_size, max_width):
+    """
+    문자열을 폰트 기준 너비에 맞게 줄바꿈
+    - 한글, 영어: 띄어쓰기 기준
+    - 일본어 등 CJK: 글자 단위 줄바꿈
+    """
+    import re
+
+    def is_cjk(text):
+        # 일본어/한자/한글/중국어 판별
+        return any('\u3040' <= ch <= '\u30ff' or '\u4e00' <= ch <= '\u9fff' or '\uac00' <= ch <= '\ud7a3' for ch in text)
+
     lines = []
     current_line = ''
     
-    # 공백 기준으로 단어 분리
-    words = text.split(' ')
-    
-    for word in words:
-        # 단어가 너무 길면 강제로 자르기
-        while len(word) > max_chars:
-            if current_line:
-                lines.append(current_line)
-                current_line = ''
-            lines.append(word[:max_chars])
-            word = word[max_chars:]
-        
-        # 현재 줄에 단어 추가 가능한지 확인
-        test_line = current_line + (' ' if current_line else '') + word
-        if len(test_line) <= max_chars:
-            current_line = test_line
-        else:
-            if current_line:
-                lines.append(current_line)
-            current_line = word
-    
-    # 마지막 줄 추가
-    if current_line:
-        lines.append(current_line)
-    
-    return lines if lines else ['']
+    # CJK 처리 (띄어쓰기 없는 언어)
+    if is_cjk(text):
+        for char in text:
+            test_line = current_line + char
+            text_width = c.stringWidth(test_line, font_name, font_size)
+            if text_width <= max_width:
+                current_line = test_line
+            else:
+                if current_line:
+                    lines.append(current_line)
+                current_line = char
+        if current_line:
+            lines.append(current_line)
+    else:
+        # 기존 방식 (띄어쓰기 있는 언어)
+        words = text.split(' ')
+        for word in words:
+            test_line = current_line + (' ' if current_line else '') + word
+            text_width = c.stringWidth(test_line, font_name, font_size)
+            if text_width <= max_width:
+                current_line = test_line
+            else:
+                if current_line:
+                    lines.append(current_line)
+                current_line = word
+        if current_line:
+            lines.append(current_line)
+
+    return lines
+
 
 def util_pdf_from_text(text: str, filename: str, user_filename: str) -> FileData:
     """안전한 PDF 생성 함수"""
@@ -139,6 +149,7 @@ def util_pdf_from_text(text: str, filename: str, user_filename: str) -> FileData
         
         print(f"[PDF DEBUG] 텍스트 처리 시작")
         
+        usable_width = width - left_margin - right_margin
         # 문단별로 처리 (안전하게)
         paragraphs = text.split('\n')
         total_lines = 0
@@ -153,7 +164,7 @@ def util_pdf_from_text(text: str, filename: str, user_filename: str) -> FileData
                 continue
             
             # 안전한 줄바꿈
-            wrapped_lines = safe_wrap_text(paragraph, 80)
+            wrapped_lines = wrap_text_by_width(c, paragraph, font_name, body_font_size, usable_width)
             total_lines += len(wrapped_lines)
             
             print(f"[PDF DEBUG] 문단 {para_idx+1}: {len(wrapped_lines)}줄")
