@@ -4,7 +4,7 @@ import asyncio
 from typing import Dict
 from src.app.modules.llm.openai_llm import OpenAILLM
 from src.app.modules.file.file_data import FileData
-from src.app.dto.refinement_dto import SpeechRefineRequest, SpeechRefineResponse
+from src.app.dto.refinement_dto import SpeechRefineRequest, SpeechRefineResponse, SpeechRefineConferenceRequest, SpeechRefineConferenceResponse
 from src.app.prompts.refining_prompt import refine_lecture_prompt, refine_meeting_prompt
 from src.app.prompts.summarizing_prompt import summarize_lecture_prompt, summarize_meeting_prompt
 from src.app.prompts.keypoints_prompt import extract_keypoints_prompt
@@ -21,18 +21,16 @@ llm_module = OpenAILLM()
 # 메인 서비스 함수
 # =============================================================================
 
-async def build_text_service(request: SpeechRefineRequest) -> SpeechRefineResponse:
-    """발화 정제 통합 서비스 - 모드별/파일형식별 처리"""
+# 강의용 메인 서비스
+async def build_lecture_text_service(request: SpeechRefineRequest) -> SpeechRefineResponse:
     try:
-        print("=== [SERVICE] 발화 정제 시작 ===")
-        print(f"모드: {request.processing_mode}")
-        print(f"파일형식: {request.fileFormat}")
-        print(f"파일명: {request.fileName}")
+        print("=== [SERVICE] 강의 정제 시작 ===")
+        print(f"파일형식: {request.fileFormat}, 파일명: {request.fileName}")
         print(f"정제: {request.enable_refine}, 요약: {request.enable_summarize}, 핵심: {request.enable_keypoints}")
 
         def normalize_language_code(code: str) -> str:
             return code.lower().split('-')[0].split('_')[0]
-        
+
         request.language_list = list(set(normalize_language_code(lang) for lang in request.language_list))
         print(f"정규화된 언어 리스트: {request.language_list}")
 
@@ -40,14 +38,6 @@ async def build_text_service(request: SpeechRefineRequest) -> SpeechRefineRespon
         refined_text = await _refine_by_mode(request.full_text, request.processing_mode, request.language_list)
         print(f"기본 정제 완료")
 
-        # 2단계: 파일 생성
-        if request.processing_mode == "lecture":
-            return await _process_lecture_mode(request, refined_text)
-        elif request.processing_mode == "conference":
-            return await _process_conference_mode(request, refined_text)
-        else:
-            raise Exception(f"지원하지 않는 모드: {request.processing_mode}")
-    
     except Exception as e:
         print(f"서비스 오류: {str(e)}")
         raise Exception(f"[SERVICE ERROR] 발화 정제 실패 - {str(e)}")
@@ -97,14 +87,14 @@ async def _process_conference_mode(request: SpeechRefineRequest, refined_texts: 
     summarized_results = []
 
     for lang, text in refined_texts.items():
-        if request.enable_refine:
+        if request.enable_script:
             refined_results.append(create_file_by_format(
                 content=text,
                 filename=f"{request.fileName}_{lang}_정제된내용",
                 file_format=request.fileFormat,
             ))
 
-        if request.enable_summarize:
+        if request.enable_note:
             summarized = await _summarize_meeting_text(text,lang)
             summarized_results.append(create_file_by_format(
                 content=summarized,
@@ -112,7 +102,7 @@ async def _process_conference_mode(request: SpeechRefineRequest, refined_texts: 
                 file_format=request.fileFormat,
             ))
 
-    return _create_response_multi(refined_results, summarized_results)
+    return _create_conference_response(refined_results, summarized_results)
 
 
 # =============================================================================
@@ -192,3 +182,20 @@ def _create_response_multi(refined: list[FileData], summarized: list[FileData], 
         total_files=total_files,
         message=f"총 {total_files}개 파일이 생성되었습니다." if total_files > 0 else "파일 생성에 실패했습니다."
     )
+
+def _create_conference_response(
+    script: list[FileData],
+    note: list[FileData]
+) -> SpeechRefineConferenceResponse:
+    all_files = (script or []) + (note or [])
+    total_files = len(all_files)
+
+    return SpeechRefineConferenceResponse(
+        script_result=script[0] if script else None,
+        note_result=note[0] if note else None,
+        script_results=script,
+        note_results=note,
+        total_files=total_files,
+        message=f"✅ 총 {total_files}개 파일이 생성되었습니다." if total_files > 0 else "❌ 파일 생성에 실패했습니다."
+    )
+

@@ -178,9 +178,13 @@ class AzureSTTMultiple:
             print("이미 음성 인식이 진행 중입니다.")
             return
         
-        # 연속 인식 시작
-        self.speech_recognizer.start_continuous_recognition()   ## Azure STT audio_stream 모니터링 시작 -> audio_data 추가되는 것 인식
-        self.is_listening = True
+        try:
+            self.speech_recognizer.start_continuous_recognition()
+            self.is_listening = True
+            print("✅ 연속 음성 인식 시작됨")
+        except Exception as e:
+            print(f"❌ 연속 음성 인식 시작 실패: {e}")
+            self.is_listening = False
 
     # [3-1] 실시간 음성 받아오기 : audio_stream에 데이터 추가 → Azure가 자동 감지 → STT 처리 → 콜백 호출
     def write_audio_chunk(self, audio_data: bytes):
