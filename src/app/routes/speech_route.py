@@ -10,7 +10,7 @@ router = APIRouter(prefix="/speech-translation")
 async def websocket_endpoint(websocket: WebSocket):
     """
         강의 모드 :
-        입력 언어가 1개인 경우에 활용할 수 있는 기능입니다.
+        입력 언어가 1개인 경우에 활용할 수 있는 기능입니다.d
     """
     await websocket_speech_service(websocket, "single")
 

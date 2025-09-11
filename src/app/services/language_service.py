@@ -34,11 +34,11 @@ async def build_text_service(request: SpeechRefineRequest) -> SpeechRefineRespon
             return code.lower().split('-')[0].split('_')[0]
         
         request.language_list = list(set(normalize_language_code(lang) for lang in request.language_list))
-        print(f"🧼 정규화된 언어 리스트: {request.language_list}")
+        print(f"정규화된 언어 리스트: {request.language_list}")
 
         # 1단계: 모드별 기본 정제
         refined_text = await _refine_by_mode(request.full_text, request.processing_mode, request.language_list)
-        print(f"✅ 기본 정제 완료")
+        print(f"기본 정제 완료")
 
         # 2단계: 파일 생성
         if request.processing_mode == "lecture":
@@ -49,7 +49,7 @@ async def build_text_service(request: SpeechRefineRequest) -> SpeechRefineRespon
             raise Exception(f"지원하지 않는 모드: {request.processing_mode}")
     
     except Exception as e:
-        print(f"❌ 서비스 오류: {str(e)}")
+        print(f"서비스 오류: {str(e)}")
         raise Exception(f"[SERVICE ERROR] 발화 정제 실패 - {str(e)}")
 
 # =============================================================================
@@ -57,7 +57,7 @@ async def build_text_service(request: SpeechRefineRequest) -> SpeechRefineRespon
 # =============================================================================
 
 async def _process_lecture_mode(request: SpeechRefineRequest, refined_texts: dict[str, str]) -> SpeechRefineResponse:
-    print("📚 강의 모드 처리 시작")
+    print("강의 모드 처리 시작")
     
     refined_results = []
     summarized_results = []
@@ -91,7 +91,7 @@ async def _process_lecture_mode(request: SpeechRefineRequest, refined_texts: dic
 
 
 async def _process_conference_mode(request: SpeechRefineRequest, refined_texts: dict[str, str]) -> SpeechRefineResponse:
-    print("🤝 회의 모드 처리 시작")
+    print("회의 모드 처리 시작")
     
     refined_results = []
     summarized_results = []
@@ -126,10 +126,10 @@ async def _refine_by_mode(text: str, mode: str, target_languages: list[str]) -> 
     for lang in target_languages:
         if mode == "conference":
             prompt = refine_meeting_prompt(lang)
-            print(f"🤝 회의용 정제 프롬프트 사용 - {lang}")
+            print(f"회의용 정제 프롬프트 사용 - {lang}")
         else:
             prompt = refine_lecture_prompt(lang)
-            print(f"📚 강의용 정제 프롬프트 사용 - {lang}")
+            print(f"강의용 정제 프롬프트 사용 - {lang}")
 
         messages = [
             {"role": "system", "content": prompt},
@@ -147,7 +147,7 @@ async def _refine_by_mode(text: str, mode: str, target_languages: list[str]) -> 
 
 async def _summarize_lecture_text(text: str, language: str) -> str:
     """텍스트 요약"""
-    print("📝 텍스트 요약 중...")
+    print("텍스트 요약 중...")
     
     messages = [
         {"role": "system", "content": summarize_lecture_prompt(language)},
@@ -158,7 +158,7 @@ async def _summarize_lecture_text(text: str, language: str) -> str:
 
 async def _summarize_meeting_text(text: str, language: str) -> str:
     """텍스트 요약"""
-    print("📝 텍스트 요약 중...")
+    print("텍스트 요약 중...")
     
     messages = [
         {"role": "system", "content": summarize_meeting_prompt(language)},
@@ -169,7 +169,7 @@ async def _summarize_meeting_text(text: str, language: str) -> str:
 
 async def _extract_lecture_keypoints(text: str, language: str) -> str:
     """핵심 포인트 추출"""
-    print("🎯 핵심 포인트 추출 중...")
+    print("핵심 포인트 추출 중...")
     
     messages = [
         {"role": "system", "content": extract_keypoints_prompt(language)},
@@ -190,5 +190,5 @@ def _create_response_multi(refined: list[FileData], summarized: list[FileData], 
         summarized_results=summarized,
         keypoints_results=keypoints or [],
         total_files=total_files,
-        message=f"✅ 총 {total_files}개 파일이 생성되었습니다." if total_files > 0 else "❌ 파일 생성에 실패했습니다."
+        message=f"총 {total_files}개 파일이 생성되었습니다." if total_files > 0 else "파일 생성에 실패했습니다."
     )

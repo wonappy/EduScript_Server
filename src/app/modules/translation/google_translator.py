@@ -87,5 +87,5 @@ class GoogleTranslator:
             }
             
         except Exception as e:
-            print(f"❌ {target_language} 번역 중 오류 발생: {e}")
+            print(f"{target_language} 번역 중 오류 발생: {e}")
             return None

@@ -46,7 +46,7 @@ class SpeechRefineResponse(BaseModel):
             + self.keypoints_results
         )
 
-# 🔴 나중에 삭제
+# 나중에 삭제
 # # [2] 발화 요약 
 # # Request
 # class SpeechSummarizeRequest(BaseModel):

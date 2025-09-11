@@ -58,7 +58,7 @@ class MultipleSpeechTranslationInterface:
     # [] STT 결과 번역
     async def _process_stt_results(self):
         """STT 결과를 지속적으로 처리하고 번역하는 백그라운드 태스크"""
-        print("🎯 STT 결과 처리 태스크 시작")
+        print("STT 결과 처리 태스크 시작")
         
         while self.is_active:
             try:
@@ -66,7 +66,7 @@ class MultipleSpeechTranslationInterface:
                 stt_result = await self.stt.get_recognition_result()
                 
                 if stt_result and isinstance(stt_result, dict) and stt_result.get('text', '').strip():
-                    print(f"📝 STT 결과 받음: {stt_result['language']} - \"{stt_result['text']}\" (최종: {stt_result.get('is_final')})")
+                    print(f"STT 결과 받음: {stt_result['language']} - \"{stt_result['text']}\" (최종: {stt_result.get('is_final')})")
                     
                     # 값 추출
                     is_final = stt_result.get('is_final', False)
@@ -84,7 +84,7 @@ class MultipleSpeechTranslationInterface:
                 # 에러가 발생해도 계속 실행
                 await asyncio.sleep(0.5)
         
-        print("🛑 STT 결과 처리 태스크 종료")
+        print("STT 결과 처리 태스크 종료")
     
     # [] 논블로킹 음성 스트림
     def process_audio_chunk(self, audio_data):
@@ -104,7 +104,7 @@ class MultipleSpeechTranslationInterface:
     async def _translate_and_queue(self, text, language, is_final):
         """텍스트를 번역하고 결과 큐에 저장"""
         try:
-            print(f"🔄 번역 시작: {language} - \"{text}")
+            print(f"번역 시작: {language} - \"{text}")
 
             input_language = language
             
@@ -119,7 +119,7 @@ class MultipleSpeechTranslationInterface:
                 # 번역 결과에 stt 모드 값 추가
                 translation_result['is_final'] = is_final
 
-                print(f"✅ 번역 완료: (최종: {is_final}): {list(translation_result.keys())}")
+                print(f"번역 완료: (최종: {is_final}): {list(translation_result.keys())}")
                 # 번역 결과를 큐에 저장
                 await self.translation_result_queue.put(translation_result)
             
@@ -218,9 +218,9 @@ class MultipleSpeechTranslationInterface:
                 
                 self.stt.stop_recognition()
                 
-                print("✅ 번역 세션 종료")
+                print("번역 세션 종료")
         except Exception as e:
-            print(f"❌ 세션 종료 오류: {e}")
+            print(f"세션 종료 오류: {e}")
     
     # 현재 세션 상태 확인
     def get_status(self):

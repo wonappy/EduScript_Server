@@ -34,9 +34,9 @@ class AzureSTTSingle:
         #인식 언어 설정
         speech_config.speech_recognition_language = input_language
 
-        speech_config.set_property(speechsdk.PropertyId.SpeechServiceConnection_InitialSilenceTimeoutMs, "1000")  # 녹음 시작 후 첫 음성을 기다리는 시간
-        speech_config.set_property(speechsdk.PropertyId.Speech_SegmentationSilenceTimeoutMs, "200")               # (세그먼트)문장 구분을 위한 침묵 감지 시간
-        speech_config.set_property(speechsdk.PropertyId.SpeechServiceConnection_EndSilenceTimeoutMs, "300")       # (문장)문장 구분을 위한 침묵 감지 시간
+        speech_config.set_property(speechsdk.PropertyId.SpeechServiceConnection_InitialSilenceTimeoutMs, "3000")  # 녹음 시작 후 첫 음성을 기다리는 시간
+        speech_config.set_property(speechsdk.PropertyId.Speech_SegmentationSilenceTimeoutMs, "700")               # (세그먼트)문장 구분을 위한 침묵 감지 시간
+        speech_config.set_property(speechsdk.PropertyId.SpeechServiceConnection_EndSilenceTimeoutMs, "600")       # (문장)문장 구분을 위한 침묵 감지 시간
         
         speech_config.set_property_by_name("SpeechServiceConnection_RecoMode", "INTERACTIVE")  # 실시간용 모드
         #speech_config.set_property_by_name("SpeechServiceConnection_RecoMode", "CONVERSATION")  # 대화용
@@ -106,24 +106,24 @@ class AzureSTTSingle:
                         'text': text,
                         'is_final': is_final
                     }
-                    print(f"🗣️  {'[최종]' if is_final else '[중간]'} {text}")
+                    print(f"{'[최종]' if is_final else '[중간]'} {text}")
                     try:
                         self.result_queue.put_nowait(result_data)   #동기 방식으로 반환된 stt 결과를 queue에 순서대로 저장
                     except Exception as e:
                         print(f"큐 추가 오류: {e}")
             
             elif reason == speechsdk.ResultReason.NoMatch:
-                print("🔇 음성 인식 결과 없음 (NoMatch)")
+                print("음성 인식 결과 없음 (NoMatch)")
 
         def session_started_handler(evt):
-            print("🎯 음성 인식 세션이 시작되었습니다.")
+            print("음성 인식 세션이 시작되었습니다.")
             
         def session_stopped_handler(evt):
-            print("🛑 음성 인식 세션이 종료되었습니다.")
+            print("음성 인식 세션이 종료되었습니다.")
             self.is_listening = False
             
         def canceled_handler(evt):
-            print(f"❌ 음성 인식이 취소되었습니다: {evt.result.cancellation_details.reason}")
+            print(f"음성 인식이 취소되었습니다: {evt.result.cancellation_details.reason}")
             if evt.result.cancellation_details.reason == speechsdk.CancellationReason.Error:
                 print(f"오류 세부사항: {evt.result.cancellation_details.error_details}")
             self.is_listening = False
@@ -143,7 +143,7 @@ class AzureSTTSingle:
         
         # 중복 인식 방지
         if self.is_listening:
-            print("⚠️ 이미 음성 인식이 진행 중입니다.")
+            print("이미 음성 인식이 진행 중입니다.")
             return
         
         # 연속 인식 시작
@@ -176,17 +176,17 @@ class AzureSTTSingle:
     def stop_recognition(self):
         """연속 음성 인식 중지"""
         if self.speech_recognizer and self.is_listening:
-            print("\n🛑 음성 인식을 중지합니다...")
+            print("\n음성 인식을 중지합니다...")
             self.speech_recognizer.stop_continuous_recognition()
             self.is_listening = False
         else:
-            print("⚠️ 진행 중인 음성 인식이 없습니다.")
+            print("진행 중인 음성 인식이 없습니다.")
 
         if self.audio_stream:
             self.audio_stream.close()
             self.audio_stream = None
 
-        print("✅ 음성 인식 중지 완료")
+        print("음성 인식 중지 완료")
 
     # [5] 음성 인식 언어 변경
     def change_setup_recognition(self, input_language) : 

@@ -76,7 +76,7 @@ async def websocket_speech_service(websocket : WebSocket, mode : str):
         )
         print(f"클라이언트 연결 종료 : {disconnect_status}")
     except Exception as e:
-        print(f"❌ 정확한 오류: {e}") 
+        print(f"정확한 오류: {e}") 
         traceback.print_exc()  # 전체 스택 트레이스 출력
         error_status = StatusMessage(
             status="disconnected", 
