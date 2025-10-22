@@ -80,7 +80,7 @@ async def refine_conference_text_route(request: SpeechRefineConferenceRequest) -
 # )
 # async def summarize_speech(request: SpeechSummarizeRequest) -> SpeechSummarizeResponse:
 #     try:
-#         # 🔴 디버깅
+#         # 디버깅
 #         print(f"=== [ROUTER DEBUG 2] summarize_speech ===") 
 #         if not request.refined_speech or not request.refined_speech.strip():
 #             raise HTTPException(status_code=400, detail="[ROUTER ERROR] 정제된 발화가 비어있습니다.")
@@ -103,7 +103,7 @@ async def refine_conference_text_route(request: SpeechRefineConferenceRequest) -
 # )
 # async def extract_keypoints(request: KeyPointsExtractRequest) -> KeyPointsExtractResponse:
 #     try:
-#         # 🔴 디버깅
+#         # 디버깅
 #         print(f"=== [ROUTER DEBUG 3] extract_keypoints ===") 
 #         if not request.refined_speech or not request.refined_speech.strip():
 #             raise HTTPException(status_code=400, detail="[ROUTER ERROR] 정제된 발화가 비어있습니다.")
