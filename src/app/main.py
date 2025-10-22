@@ -1,5 +1,6 @@
 # app/main.py
 
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.app.routes.common_route import api_router
@@ -20,3 +21,6 @@ def read_root():
     return {"Hello": "World"}
 
 app.include_router(api_router)
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

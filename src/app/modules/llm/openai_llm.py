@@ -15,7 +15,7 @@ class OpenAILLM:
     async def select_gpt_model(self, messages: list, temperature: float = 0.3) -> str:
         try:
             response = await self.client.chat.completions.create(
-                model="gpt-4o-mini", # 🔴 Chat GPT 모델 
+                model="gpt-4o-mini", # Chat GPT 모델 
                 messages=messages,
                 temperature=temperature
             )
