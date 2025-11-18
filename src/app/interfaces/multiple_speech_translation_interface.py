@@ -37,6 +37,7 @@ class MultipleSpeechTranslationInterface:
         """
         try:
             # STT 설정 및 시작
+            print("STT 세션 시작 시도 중...")
             self.stt.setup_streaming_recognition(input_languages)
             self.stt.start_recognition()
             

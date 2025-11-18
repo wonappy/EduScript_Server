@@ -77,7 +77,7 @@ class AzureSTTMultiple:
         #         detected_language = auto_detect_result.language
 
         #         if text:
-        #             print(f"🗣️ 원본: {text}\n")
+        #             print(f" 원본: {text}\n")
         #             try:
         #                 result_data = {
         #                     'language': detected_language,
@@ -87,11 +87,11 @@ class AzureSTTMultiple:
         #             except Exception as e:
         #                 print(f"큐 추가 오류: {e}")
         #         else:
-        #             print("🔇 빈 텍스트 결과")
+        #             print(" 빈 텍스트 결과")
         #     elif evt.result.reason == speechsdk.ResultReason.NoMatch:
-        #         print("🔇 음성 인식 결과 없음")
+        #         print(" 음성 인식 결과 없음")
         #     else:
-        #         print(f"🔍 기타 STT 결과: {evt.result.reason}")
+        #         print(f" 기타 STT 결과: {evt.result.reason}")
 
         # 이벤트 핸들러 설정 - recognizing
         # mode - recognizing : stt가 인식한 단위의 연속해서 반환. 실시성이 우수하나 빠른 업데이트로 보기 어지러울 수 있음.
@@ -178,9 +178,13 @@ class AzureSTTMultiple:
             print("이미 음성 인식이 진행 중입니다.")
             return
         
-        # 연속 인식 시작
-        self.speech_recognizer.start_continuous_recognition()   ## Azure STT audio_stream 모니터링 시작 -> audio_data 추가되는 것 인식
-        self.is_listening = True
+        try:
+            self.speech_recognizer.start_continuous_recognition()
+            self.is_listening = True
+            print(" 연속 음성 인식 시작됨")
+        except Exception as e:
+            print(f" 연속 음성 인식 시작 실패: {e}")
+            self.is_listening = False
 
     # [3-1] 실시간 음성 받아오기 : audio_stream에 데이터 추가 → Azure가 자동 감지 → STT 처리 → 콜백 호출
     def write_audio_chunk(self, audio_data: bytes):
