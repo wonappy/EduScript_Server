@@ -4,7 +4,7 @@ import asyncio
 from typing import Dict
 from src.app.modules.llm.openai_llm import OpenAILLM
 from src.app.modules.file.file_data import FileData
-from src.app.dto.refinement_dto import SpeechRefineRequest, SpeechRefineResponse
+from src.app.dto.refinement_dto import SpeechRefineRequest, SpeechRefineResponse, SpeechRefineConferenceRequest, SpeechRefineConferenceResponse
 from src.app.prompts.refining_prompt import refine_lecture_prompt, refine_meeting_prompt
 from src.app.prompts.summarizing_prompt import summarize_lecture_prompt, summarize_meeting_prompt
 from src.app.prompts.keypoints_prompt import extract_keypoints_prompt
