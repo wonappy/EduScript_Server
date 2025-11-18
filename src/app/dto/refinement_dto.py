@@ -46,7 +46,41 @@ class SpeechRefineResponse(BaseModel):
             + self.keypoints_results
         )
 
-# 나중에 삭제
+class SpeechRefineConferenceRequest(BaseModel):
+    full_text: str
+    fileName: str = "conference_speech"  # 기본 파일 이름
+    fileFormat: str = "txt"  # 기본 파일 형식은 txt
+
+    # 언어 설정
+    language_list: List[str] = ["ko"]
+
+    # 문서 타입 설정
+    enable_script: bool = True
+    enable_note: bool = False
+    
+    processing_mode: str = "conference"
+
+class SpeechRefineConferenceResponse(BaseModel):
+    # 단일 파일 (기존 구조 호환)
+    script_result: Optional[FileData] = None
+    note_result: Optional[FileData] = None
+
+    # 다국어 지원용 멀티 파일 리스트
+    script_results: List[FileData] = []
+    note_results: List[FileData] = []
+
+    total_files: int = 0
+    message: str = ""
+
+    def get_available_files(self) -> List[FileData]:
+        """실제로 생성된 모든 파일 반환 (단일 + 다국어 파일 포함)"""
+        return (
+            [f for f in [self.script_result, self.note_result] if f]
+            + self.script_results
+            + self.note_results
+        )
+
+# 🔴 나중에 삭제
 # # [2] 발화 요약 
 # # Request
 # class SpeechSummarizeRequest(BaseModel):
