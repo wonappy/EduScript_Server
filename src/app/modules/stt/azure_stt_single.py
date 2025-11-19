@@ -63,17 +63,17 @@ class AzureSTTSingle:
             if evt.result.reason == speechsdk.ResultReason.RecognizedSpeech:    #stt 결과 받아오기 -> 처리 자체를 동기 방식으로 진행 (비동기 함수 사용x)
                 text = evt.result.text.strip()
                 if text:
-                    print(f"🗣️ 원본: {text}\n")
+                    print(f" 원본: {text}\n")
                     try:
                         self.result_queue.put_nowait(text)                      #동기 방식으로 반환된 stt 결과를 queue에 순서대로 저장
                     except Exception as e:
                         print(f"큐 추가 오류: {e}")
                 else:
-                    print("🔇 빈 텍스트 결과")
+                    print(" 빈 텍스트 결과")
             elif evt.result.reason == speechsdk.ResultReason.NoMatch:
-                print("🔇 음성 인식 결과 없음")
+                print(" 음성 인식 결과 없음")
             else:
-                print(f"🔍 기타 STT 결과: {evt.result.reason}")
+                print(f" 기타 STT 결과: {evt.result.reason}")
 
         # 이벤트 핸들러 설정 - recognizing
         # mode - recognizing : stt가 인식한 단위의 연속해서 반환. 실시성이 우수하나 빠른 업데이트로 보기 어지러울 수 있음.
@@ -81,17 +81,17 @@ class AzureSTTSingle:
             if evt.result.reason == speechsdk.ResultReason.RecognizingSpeech:    #stt 결과 받아오기 -> 처리 자체를 동기 방식으로 진행 (비동기 함수 사용x)
                 text = evt.result.text.strip()
                 if text:
-                    print(f"🗣️ 원본: {text}\n")
+                    print(f" 원본: {text}\n")
                     try:
                         self.result_queue.put_nowait(text)                      #동기 방식으로 반환된 stt 결과를 queue에 순서대로 저장
                     except Exception as e:
                         print(f"큐 추가 오류: {e}")
                 else:
-                    print("🔇 빈 텍스트 결과")
+                    print(" 빈 텍스트 결과")
             elif evt.result.reason == speechsdk.ResultReason.NoMatch:
-                print("🔇 음성 인식 결과 없음")
+                print(" 음성 인식 결과 없음")
             else:
-                print(f"🔍 기타 STT 결과: {evt.result.reason}")
+                print(f" 기타 STT 결과: {evt.result.reason}")
 
          # 공통 핸들러 함수 정의 - reconizing + recognized
         
