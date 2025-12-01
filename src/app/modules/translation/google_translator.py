@@ -28,9 +28,12 @@ class GoogleTranslator:
         # 결과 저장 변수
         results = {}
 
+        # 'en-US'에서 'en'만 추출
+        simple_lang_code = input_language.split('-')[0];
+
         # 원문 내용 저장 (가장 첫번째로 저장)
-        results[input_language] = {
-                'target_lang': input_language.split('-')[0],
+        results[simple_lang_code] = {
+                'target_lang': simple_lang_code,
                 'result_text': text,
             }
         

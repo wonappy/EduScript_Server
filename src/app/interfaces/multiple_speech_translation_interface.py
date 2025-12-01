@@ -74,8 +74,33 @@ class MultipleSpeechTranslationInterface:
                     text = stt_result.get('text')
                     language = stt_result.get('language')
 
-                    # 번역 태스크 시작 (백그라운드에서 처리)
-                    asyncio.create_task(self._translate_and_queue(text, language, is_final))
+                    # recognized인 경우에만 번역 처리
+                    if is_final == True:
+                        # 번역 태스크 시작 (백그라운드에서 처리)
+                        asyncio.create_task(self._translate_and_queue(text, language, is_final))
+                    else:
+                        # recognizing인 경우에는 번역 x
+                        raw_result = {
+                            'is_final': False    
+                        }
+
+                        # 현재 발화 언어
+                        simple_lang_code = language.split('-')[0];
+
+                        for lang in self.current_target_languages:
+                            if lang == simple_lang_code:
+                                raw_result[simple_lang_code] = {
+                                    'target_lang': lang,
+                                    'result_text': text
+                                }
+                            else:
+                                raw_result[lang] = {
+                                    'target_lang': lang,
+                                    'result_text': "..."
+                                } # 번역 x 원문 그대로 대입
+
+                        # 번역 결과를 큐에 저장
+                        await self.translation_result_queue.put(raw_result)
                 
                 # 짧은 대기 후 다시 확인
                 await asyncio.sleep(0.1)

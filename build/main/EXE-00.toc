@@ -67,7 +67,7 @@
  [],
  False,
  False,
- 1761097233,
+ 1763533870,
  [('run.exe',
    'D:\\Documents\\GitHub\\EduScript_Server\\.venv\\lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit-intel\\run.exe',
    'EXECUTABLE')],
