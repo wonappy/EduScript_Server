@@ -157,6 +157,7 @@ async def send_translation_results(websocket: WebSocket, interface, mode):
             # 논블로킹으로 결과 확인
             result = await interface.get_latest_translation_result()
             
+            # 결과가 있는 경우
             if result:
                 # dict에서 is_final 값 먼저 추출
                 is_final = result.pop('is_final', False)
@@ -182,7 +183,7 @@ async def send_translation_results(websocket: WebSocket, interface, mode):
                 print("클라이언트에 번역 결과 전송 완료")
             else:
                 # 결과가 없으면 잠깐 대기
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.05)
                 
         except Exception as e:
             print(f"번역 결과 전송 오류: {e}")
