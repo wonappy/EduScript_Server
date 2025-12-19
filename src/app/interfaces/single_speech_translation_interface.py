@@ -72,8 +72,29 @@ class SingleSpeechTranslationInterface:
 
                     print(f"STT 결과 받음: {text} (최종: {is_final})")
                     
-                    # 번역 태스크 시작 (백그라운드에서 처리)
-                    asyncio.create_task(self._translate_and_queue(text, is_final))
+                    # recognized인 경우에만 번역 처리
+                    if is_final == True : 
+                        # 번역 태스크 시작 (백그라운드에서 처리)
+                        asyncio.create_task(self._translate_and_queue(text, is_final))
+                    else:
+                        # recognizing인 경우에는 번역 x
+                        raw_result = {
+                            'is_final': False    
+                        }
+
+                        # 원문 저장 및 번역 언어 결과(원문으로) 저장
+                        raw_result[self.current_input_language] = {
+                                'target_lang': self.current_input_language,
+                                'result_text': text
+                            } 
+                        for lang in self.current_target_languages:
+                            raw_result[lang] = {
+                                'target_lang': lang,
+                                'result_text': "..."
+                            } # 번역 x 원문 그대로 대입
+
+                        # 번역 결과를 큐에 저장
+                        await self.translation_result_queue.put(raw_result)
                 
                 # 짧은 대기 후 다시 확인
                 await asyncio.sleep(0.1)

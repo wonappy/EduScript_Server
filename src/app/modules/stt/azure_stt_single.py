@@ -95,6 +95,8 @@ class AzureSTTSingle:
 
          # 공통 핸들러 함수 정의 - reconizing + recognized
         
+        # 이벤트 핸들러 설정 - recognized + recognizing
+        # 두 개 다 반환받기
         def hybrid_result_handler(evt, is_final: bool):
             reason = evt.result.reason
             

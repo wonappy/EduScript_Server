@@ -40,7 +40,7 @@ class AzureSTTMultiple:
         
         speech_config.set_property(property_id=speechsdk.PropertyId.SpeechServiceConnection_LanguageIdMode, value='Continuous')     # 다중 언어 인식 모드
 
-        speech_config.set_property_by_name("SpeechServiceConnection_RecoMode", "CONVERSATION")  # 실시간용 모드
+        speech_config.set_property_by_name("SpeechServiceConnection_RecoMode", "INTERACTIVE")  # 실시간용 모드
         #speech_config.set_property_by_name("SpeechServiceConnection_RecoMode", "CONVERSATION")  # 대화용
         speech_config.output_format = speechsdk.OutputFormat.Simple  # 간단한 출력 형식
         #speech_config.enable_dictation() 
