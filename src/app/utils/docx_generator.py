@@ -7,6 +7,8 @@ from docx.enum.style import WD_STYLE_TYPE
 from io import BytesIO
 from src.app.modules.file.file_data import FileData
 
+# docx 파일 생성 모듈
+
 # 강의 모드
 def create_docx_from_text(text: str, filename: str, user_filename: str) -> FileData:
     """텍스트를 DOCX로 변환하여 FileData 객체 생성"""
