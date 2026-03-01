@@ -79,22 +79,3 @@ class SpeechRefineConferenceResponse(BaseModel):
             + self.script_results
             + self.note_results
         )
-
-#  나중에 삭제
-# # [2] 발화 요약 
-# # Request
-# class SpeechSummarizeRequest(BaseModel):
-#     refined_result: str
-
-# # Response
-# class SpeechSummarizeResponse(BaseModel):
-#     summary_result: str
-
-# # [3] 중요 내용 추출 
-# # Request
-# class KeyPointsExtractRequest(BaseModel):
-#     refined_result: str
-
-# # Response
-# class KeyPointsExtractResponse(BaseModel):
-#     keypoints_result: str
