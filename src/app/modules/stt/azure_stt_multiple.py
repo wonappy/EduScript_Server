@@ -46,8 +46,8 @@ class AzureSTTMultiple:
         #speech_config.enable_dictation() 
 
 
-        #인식 언어 설정 (최소 1개 ~ 최대 10개)
-        #동일한 언어에 대해 여러 로캘을 포함하지 마세요(예: en-US및 en-GB)
+        # 인식 언어 설정 (최소 1개 ~ 최대 10개)
+        # 동일한 언어에 대해 여러 로캘을 포함하지 x (en-US, en-GB 이런식으로)
         auto_detect_source_language_config = speechsdk.languageconfig.AutoDetectSourceLanguageConfig(languages=input_languages)
 
         #오디오 설정
@@ -65,33 +65,6 @@ class AzureSTTMultiple:
             auto_detect_source_language_config=auto_detect_source_language_config,
             audio_config=audio_config
         )
-
-        # # 이벤트 핸들러 설정
-        # # mode - recognized : stt가 한 문장 인식을 완료했을 때의 결과값을 반환. 실시간성은 떨어지지만 품질이 우수.
-        # def recognized_handler(evt):            
-        #     if evt.result.reason == speechsdk.ResultReason.RecognizedSpeech:    #stt 결과 받아오기 -> 처리 자체를 동기 방식으로 진행 (비동기 함수 사용x)
-        #         text = evt.result.text.strip()
-
-        #         #인식 음성 분석
-        #         auto_detect_result = speechsdk.AutoDetectSourceLanguageResult(evt.result)
-        #         detected_language = auto_detect_result.language
-
-        #         if text:
-        #             print(f" 원본: {text}\n")
-        #             try:
-        #                 result_data = {
-        #                     'language': detected_language,
-        #                     'text': text
-        #                 }
-        #                 self.result_queue.put_nowait(result_data)                      #동기 방식으로 반환된 stt 결과를 queue에 순서대로 저장
-        #             except Exception as e:
-        #                 print(f"큐 추가 오류: {e}")
-        #         else:
-        #             print(" 빈 텍스트 결과")
-        #     elif evt.result.reason == speechsdk.ResultReason.NoMatch:
-        #         print(" 음성 인식 결과 없음")
-        #     else:
-        #         print(f" 기타 STT 결과: {evt.result.reason}")
 
         # 이벤트 핸들러 설정 - recognizing
         # mode - recognizing : stt가 인식한 단위의 연속해서 반환. 실시성이 우수하나 빠른 업데이트로 보기 어지러울 수 있음.
@@ -167,7 +140,7 @@ class AzureSTTMultiple:
 
         self.speech_recognizer.session_started.connect(session_started_handler)         # 세션이 시작되었을 때, 
         self.speech_recognizer.session_stopped.connect(session_stopped_handler)         # 세션이 종료되었을 때,
-        self.speech_recognizer.canceled.connect(canceled_handler)                       # 인식이 취소되었을 떄,
+        self.speech_recognizer.canceled.connect(canceled_handler)                       # 인식이 취소되었을 때,
     
     # [3] 음성 인식 
     def start_recognition(self):
@@ -186,7 +159,8 @@ class AzureSTTMultiple:
             print(f" 연속 음성 인식 시작 실패: {e}")
             self.is_listening = False
 
-    # [3-1] 실시간 음성 받아오기 : audio_stream에 데이터 추가 → Azure가 자동 감지 → STT 처리 → 콜백 호출
+    # [3-1] 실시간 음성 받아오기 
+    # audio_stream에 데이터 추가 -> Azure가 자동 감지 -> STT 처리 -> 콜백 호출
     def write_audio_chunk(self, audio_data: bytes):
         """
         오디오 청크를 스트림에 추가
