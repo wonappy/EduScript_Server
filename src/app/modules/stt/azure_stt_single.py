@@ -152,7 +152,8 @@ class AzureSTTSingle:
         self.speech_recognizer.start_continuous_recognition()   ## Azure STT audio_stream 모니터링 시작 -> audio_data 추가되는 것 인식
         self.is_listening = True
 
-    # [3-1] 실시간 음성 받아오기 : audio_stream에 데이터 추가 → Azure가 자동 감지 → STT 처리 → 콜백 호출
+    # [3-1] 실시간 음성 받아오기 
+    # audio_stream에 데이터 추가 -> Azure가 자동 감지 -> STT 처리 -> 콜백 호출
     def write_audio_chunk(self, audio_data: bytes):
         """
         오디오 청크를 스트림에 추가
@@ -193,7 +194,7 @@ class AzureSTTSingle:
     # [5] 음성 인식 언어 변경
     def change_setup_recognition(self, input_language) : 
         self.stop_recognition()                                     # 기존 인식 중지
-        self.setup_streaming_recognition(input_language)  # 음성 인식 언어 변경
+        self.setup_streaming_recognition(input_language)            # 음성 인식 언어 변경
         self.start_recognition()                                    # 다시 시작
 
     def is_active(self) -> bool:

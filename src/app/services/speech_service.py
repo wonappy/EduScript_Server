@@ -119,7 +119,7 @@ async def process_audio_stream(websocket: WebSocket, interface, mode):
                             if interface.current_input_language != config.input_language:
                                 await interface.change_input_language_settings(config.input_language)
                         elif mode == "multiple":
-                            if interface.current_input_languages != config.input_languages:  # current_input_languages로 수정
+                            if interface.current_input_languages != config.input_languages: 
                                 await interface.change_input_language_settings(config.input_languages)
                         # 번역 언어 설정 변경
                         if interface.current_target_languages != config.target_languages : 
