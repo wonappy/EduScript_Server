@@ -62,10 +62,14 @@ async def refine_conference_text_route(request: SpeechRefineConferenceRequest) -
         #     return await refine_text_to_docx_service(request, mode = request.processing_mode)
         # else:
         response = await build_conference_text_service(request)
+=======
+        response = await build_text_service(request)
         return response
+
     except HTTPException as httpE:
         logging.error(f"[ROUTER ERROR] 발화 정제 HTTP 에러 발생 - [{httpE.status_code}: {httpE.detail}]")
         raise
+
     except Exception as e:
         logging.error(f"[ROUTER ERROR] 발화 정제 실패 - {str(e)}")
         raise HTTPException(status_code=500, detail="발화 정제 처리 중 오류 발생")

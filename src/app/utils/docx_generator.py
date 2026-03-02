@@ -64,7 +64,7 @@ def create_docx_from_text(text: str, filename: str, user_filename: str) -> FileD
             p = doc.add_paragraph()
             run = p.add_run(paragraph)
             
-            # 폰트 설정 (선택사항)
+            # 폰트 설정 
             run.font.size = Pt(12)  # 12pt 폰트
             
             total_paragraphs += 1

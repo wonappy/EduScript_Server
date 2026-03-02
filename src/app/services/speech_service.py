@@ -119,7 +119,7 @@ async def process_audio_stream(websocket: WebSocket, interface, mode):
                             if interface.current_input_language != config.input_language:
                                 await interface.change_input_language_settings(config.input_language)
                         elif mode == "multiple":
-                            if interface.current_input_languages != config.input_languages:  # current_input_languages로 수정
+                            if interface.current_input_languages != config.input_languages: 
                                 await interface.change_input_language_settings(config.input_languages)
                         # 번역 언어 설정 변경
                         if interface.current_target_languages != config.target_languages : 
@@ -157,6 +157,7 @@ async def send_translation_results(websocket: WebSocket, interface, mode):
             # 논블로킹으로 결과 확인
             result = await interface.get_latest_translation_result()
             
+            # 결과가 있는 경우
             if result:
                 # dict에서 is_final 값 먼저 추출
                 is_final = result.pop('is_final', False)
@@ -182,7 +183,7 @@ async def send_translation_results(websocket: WebSocket, interface, mode):
                 print("클라이언트에 번역 결과 전송 완료")
             else:
                 # 결과가 없으면 잠깐 대기
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.05)
                 
         except Exception as e:
             print(f"번역 결과 전송 오류: {e}")

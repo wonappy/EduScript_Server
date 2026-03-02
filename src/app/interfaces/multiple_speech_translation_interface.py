@@ -74,8 +74,33 @@ class MultipleSpeechTranslationInterface:
                     text = stt_result.get('text')
                     language = stt_result.get('language')
 
-                    # 번역 태스크 시작 (백그라운드에서 처리)
-                    asyncio.create_task(self._translate_and_queue(text, language, is_final))
+                    # recognized인 경우에만 번역 처리
+                    if is_final == True:
+                        # 번역 태스크 시작 (백그라운드에서 처리)
+                        asyncio.create_task(self._translate_and_queue(text, language, is_final))
+                    else:
+                        # recognizing인 경우에는 번역 x
+                        raw_result = {
+                            'is_final': False    
+                        }
+
+                        # 현재 발화 언어
+                        simple_lang_code = language.split('-')[0];
+
+                        for lang in self.current_target_languages:
+                            if lang == simple_lang_code:
+                                raw_result[simple_lang_code] = {
+                                    'target_lang': lang,
+                                    'result_text': text
+                                }
+                            else:
+                                raw_result[lang] = {
+                                    'target_lang': lang,
+                                    'result_text': "..."
+                                } # 번역 x 원문 그대로 대입
+
+                        # 번역 결과를 큐에 저장
+                        await self.translation_result_queue.put(raw_result)
                 
                 # 짧은 대기 후 다시 확인
                 await asyncio.sleep(0.1)
@@ -136,30 +161,6 @@ class MultipleSpeechTranslationInterface:
         except:
             # 큐가 비어있으면 None 반환
             return None
-
-    # [3] 음성 스트림 전달 -> 번역 결과 반환
-    # async def process_audio_with_translation(self, audio_data, target_languages : list[str], timeout=3.0):
-    #     """
-    #     오디오 청크 처리 - STT에 전달
-        
-    #     Args:
-    #         audio_data: 오디오 바이트 데이터
-    #         target_languages : 출력 언어 리스트
-    #         timeout : stt 결과 대기 시간
-    #     """
-    #     # 1. 오디오 추가
-    #     self.stt.write_audio_chunk(audio_data)
-        
-    #     # 2. 결과 체크 (timeout 동안만 결과값 대기 -> 블로킹 방지)
-    #     try:
-    #         text = await asyncio.wait_for(
-    #             self.stt.get_recognition_result(), 
-    #             timeout=timeout
-    #         )
-    #         if text:
-    #             return await self.translator.translate_multiple_languages(text, self.current_input_language, self.current_target_languages)   # 번역 결과값 반환
-    #     except asyncio.TimeoutError:
-    #         return None  # 결과 없으면 즉시 None 반환
     
     # [3-1] 음성 인식 언어 변경
     async def change_input_language_settings(self, input_languages: list[str]):
