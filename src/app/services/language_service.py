@@ -137,10 +137,10 @@ async def _refine_by_mode(text: str, mode: str, target_languages: list[str]) -> 
     for lang in target_languages:
         if mode == "conference":
             prompt = refine_meeting_prompt(lang)
-            print(f"🤝 회의용 정제 프롬프트 사용 - {lang}")
+            print(f"회의용 정제 프롬프트 사용 - {lang}")
         else:
             prompt = refine_lecture_prompt(lang)
-            print(f"📚 강의용 정제 프롬프트 사용 - {lang}")
+            print(f"강의용 정제 프롬프트 사용 - {lang}")
 
         messages = [
             {"role": "system", "content": prompt},
