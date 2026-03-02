@@ -7,7 +7,7 @@ from src.app.services.language_service import build_lecture_text_service, build_
 
 router = APIRouter(prefix="/language")
 
-# [1] 발화 정제
+# 발화 정제 강의모드
 @router.post(
     "/refinement",
     tags=["LLM"],
@@ -23,13 +23,6 @@ async def refine_text_route(request: SpeechRefineRequest) -> SpeechRefineRespons
         if not request.full_text or not request.full_text.strip():
             raise HTTPException(status_code=400, detail="[ROUTER ERROR] 발화 내용이 비어있습니다.")
         
-        # [1] 서비스 호출
-
-        # if request.fileFormat.lower() == "pdf":
-        #     return await refine_text_to_pdf_service(request)
-        # elif request.fileFormat.lower() == "docx":
-        #     return await refine_text_to_docx_service(request, mode = request.processing_mode)
-        # else:
         response = await build_lecture_text_service(request)
         return response
     except HTTPException as httpE:
@@ -39,6 +32,7 @@ async def refine_text_route(request: SpeechRefineRequest) -> SpeechRefineRespons
         logging.error(f"[ROUTER ERROR] 발화 정제 실패 - {str(e)}")
         raise HTTPException(status_code=500, detail="발화 정제 처리 중 오류 발생")
 
+# 발화 정제 토론모드
 @router.post(
     "/refinement/conference",
     tags=["LLM"],
@@ -54,16 +48,7 @@ async def refine_conference_text_route(request: SpeechRefineConferenceRequest) -
         if not request.full_text or not request.full_text.strip():
             raise HTTPException(status_code=400, detail="[ROUTER ERROR] 발화 내용이 비어있습니다.")
         
-        # [1] 서비스 호출
-
-        # if request.fileFormat.lower() == "pdf":
-        #     return await refine_text_to_pdf_service(request)
-        # elif request.fileFormat.lower() == "docx":
-        #     return await refine_text_to_docx_service(request, mode = request.processing_mode)
-        # else:
         response = await build_conference_text_service(request)
-=======
-        response = await build_text_service(request)
         return response
 
     except HTTPException as httpE:
